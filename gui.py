@@ -1,14 +1,18 @@
 from tkinter import *
 from PIL import Image, ImageTk
 
+import airquality_database
+from interface.chart_page import ChartPage
 from interface.file_page import FilePage
 from interface.home_page import HomePage
 
+db = airquality_database.AirQuality()
+db.Create()
 root = Tk()
 root.title("AirQuality")
 #root.geometry('1024x768')
-width= root.winfo_screenwidth()
-height= root.winfo_screenheight()
+width = root.winfo_screenwidth()
+height = root.winfo_screenheight()
 # setting window size
 root.geometry("%dx%d" % (width, height))
 root.grid_rowconfigure(0, weight=1)
@@ -64,7 +68,8 @@ def showPage(page):
     lastPage = page.show()
 
 page1 = HomePage(root)
-page2 = FilePage(root)
+page2 = FilePage(root, db)
+page3 = ChartPage(root, db)
 
 # Define image in menu and resize it
 home = ImageTk.PhotoImage(Image.open('home.png').resize((40, 40), Image.ANTIALIAS))
@@ -75,22 +80,22 @@ chart = ImageTk.PhotoImage(Image.open('chart.png').resize((40, 40), Image.ANTIAL
 
 root.update()  # For the width to get updated
 
-frame = Frame(root, bg='LightSkyBlue1', width=50, height=root.winfo_height())
+frame = Frame(root, bg='LightSkyBlue2', width=50, height=root.winfo_height())
 frame.grid(row=0, column=0)
 
 # Make the buttons with the icons to be shown
-homePage = Button(frame, image=home, bg='LightSkyBlue1', relief='flat', command=lambda: showPage(page1))
-readFile = Button(frame, image=file, bg='LightSkyBlue1', relief='flat', command=lambda: showPage(page2))
-exportData = Button(frame, image=export, bg='LightSkyBlue1', relief='flat')
-analyzeData = Button(frame, image=analyze, bg='LightSkyBlue1', relief='flat')
-chartData = Button(frame, image=chart, bg='LightSkyBlue1', relief='flat')
+homePage = Button(frame, image=home, bg='LightSkyBlue2', relief='flat', command=lambda: showPage(page1))
+readFile = Button(frame, image=file, bg='LightSkyBlue2', relief='flat', command=lambda: showPage(page2))
+exportData = Button(frame, image=export, bg='LightSkyBlue2', relief='flat')
+analyzeData = Button(frame, image=analyze, bg='LightSkyBlue2', relief='flat')
+chartData = Button(frame, image=chart, bg='LightSkyBlue2', relief='flat', command=lambda: showPage(page3))
 
 # Put on the frame
-homePage.grid(row=0, column=0, pady=10)
-readFile.grid(row=1, column=0, pady=10)
-exportData.grid(row=2, column=0, pady=10)
-analyzeData.grid(row=3, column=0, pady=10)
-chartData.grid(row=4, column=0, pady=10)
+homePage.grid(row=0, column=0, pady=15)
+readFile.grid(row=1, column=0, pady=15)
+exportData.grid(row=2, column=0, pady=15)
+analyzeData.grid(row=3, column=0, pady=15)
+chartData.grid(row=4, column=0, pady=15)
 
 # Bind to the frame, enter or leave
 frame.bind('<Enter>', lambda e: show())

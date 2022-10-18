@@ -91,11 +91,10 @@ class AirQuality:
         self.sess = self.session()
 
     def AddFile(self, fileName):
-        self.sess.add_all([
-            File('Meditate'),
-            File('Eat a nutritious breakfast')
-        ])
-        self.sess.commit()
+        file = File(fileName)
+        self.sess.add(file)
+        self.sess.flush()
+        return file.Id
 
     def AddPositions(self, positions):
         self.sess.add_all(positions)
