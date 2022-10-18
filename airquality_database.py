@@ -106,8 +106,6 @@ class AirQuality:
 
     def GetAllFile(self):
         files = self.sess.query(File).all()
-        for file in files:
-            print(file.Name)
         return files
 
     def GetAllPositions(self):

@@ -17,7 +17,11 @@ class ChartPage:
         pass
 
     def ReadExistFilesName(self):
-        pass
+        files = self.db.GetAllFile()
+        files_names = []
+        for f in files:
+            files_names.append(f.Name)
+        return files_names
 
     def GetFrame(self):
         return self.frame
