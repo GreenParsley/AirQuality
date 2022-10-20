@@ -2,6 +2,7 @@ from datetime import date
 from datetime import datetime
 from sqlalchemy import create_engine, Float
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker, declarative_base, relationship
 
 # Using SQLite
@@ -85,10 +86,14 @@ class AirQuality:
         self.session = None
 
     def Create(self):
-        Base.metadata.drop_all()
-        Base.metadata.create_all()
-        self.session = sessionmaker(bind=eng)
-        self.sess = self.session()
+        try:
+            eng.connect()
+        except OperationalError:
+            Base.metadata.drop_all()
+            Base.metadata.create_all()
+        finally:
+            self.session = sessionmaker(bind=eng)
+            self.sess = self.session()
 
     def AddFile(self, fileName):
         file = File(fileName)

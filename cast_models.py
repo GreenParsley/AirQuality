@@ -1,5 +1,6 @@
 from datetime import datetime
 from airquality_database import Positions, Measures
+import pandas as pd
 
 
 class CastModels:
@@ -24,6 +25,10 @@ class CastModels:
                          self.ReturnNullIfEmpty(records[10]), self.ReturnNullIfEmpty(records[11]),
                          fileId))
         return measuresCollection
+
+    def CastToPandas(self, data):
+        df = pd.DataFrame([t.__dict__ for t in data])
+        return df
 
     def ReturnNullIfEmpty(self, value):
         if value == "":
