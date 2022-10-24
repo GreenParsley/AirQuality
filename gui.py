@@ -2,6 +2,7 @@ from tkinter import *
 from PIL import Image, ImageTk
 
 import airquality_database
+from interface.analyze_page import AnalyzePage
 from interface.chart_page import ChartPage
 from interface.file_page import FilePage
 from interface.home_page import HomePage
@@ -70,6 +71,7 @@ def showPage(page):
 page1 = HomePage(root)
 page2 = FilePage(root, db)
 page3 = ChartPage(root, db)
+page4 = AnalyzePage(root, db)
 
 # Define image in menu and resize it
 home = ImageTk.PhotoImage(Image.open('home.png').resize((40, 40), Image.ANTIALIAS))
@@ -87,7 +89,7 @@ frame.grid(row=0, column=0)
 homePage = Button(frame, image=home, bg='LightSkyBlue2', relief='flat', command=lambda: showPage(page1))
 readFile = Button(frame, image=file, bg='LightSkyBlue2', relief='flat', command=lambda: showPage(page2))
 exportData = Button(frame, image=export, bg='LightSkyBlue2', relief='flat')
-analyzeData = Button(frame, image=analyze, bg='LightSkyBlue2', relief='flat')
+analyzeData = Button(frame, image=analyze, bg='LightSkyBlue2', relief='flat', command=lambda: showPage(page4))
 chartData = Button(frame, image=chart, bg='LightSkyBlue2', relief='flat', command=lambda: showPage(page3))
 
 # Put on the frame

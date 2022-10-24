@@ -59,7 +59,7 @@ class Positions(Base):
 
     def __init__(self, timestamp, date, latitude, longitude, fileId):
         self.Timestamp = timestamp
-        self.Date = date  # problem rzutowania prawdopodobnie
+        self.Date = date
         self.Latitude = latitude
         self.Longitude = longitude
         self.FileId = fileId
@@ -71,12 +71,26 @@ class File(Base):
     Id = Column(Integer, primary_key=True)
     Name = Column(String, nullable=False)
     CreateDate = Column(DateTime, nullable=False)
+    StartDate = Column(DateTime, nullable=True)
+    EndDate = Column(DateTime, nullable=True)
     Measures = relationship("Measures")
     Positions = relationship("Positions")
 
     def __init__(self, name):
         self.Name = name
         self.CreateDate = date.today()
+
+class TripDto():
+    Id = None
+    Name = None
+    StartDate = None
+    EndDate = None
+
+    def __init__(self, id, name, start, end):
+        self.Name = name
+        self.Id = id
+        self.StartDate = start
+        self.EndDate = end
 
 
 class AirQuality:
@@ -88,7 +102,7 @@ class AirQuality:
     def Create(self):
         try:
             eng.connect()
-        except OperationalError:
+        except Exception:
             Base.metadata.drop_all()
             Base.metadata.create_all()
         finally:
@@ -112,6 +126,17 @@ class AirQuality:
     def GetAllFile(self):
         files = self.sess.query(File).all()
         return files
+
+    def GetCountFiles(self):
+        count = self.sess.query(File).count()
+        return count
+
+    def GetTrips(self):
+        files = self.GetAllFile()
+        trips = []
+        for f in files:
+            trips.append(TripDto(f.Id, f.Name, f.StartDate, f.EndDate))
+        return trips
 
     def GetAllPositions(self):
         positions = self.sess.query(Positions).all()

@@ -49,7 +49,8 @@ class FilePage:
                     positions = self.cast_models.CastToPositions(data_positions, id)
                     self.db.AddPositions(positions)
             self.label_status.config(text="loading success", fg="green")
-        except:
+        except EXCEPTION as e:
+            print(e)
             self.label_status.config(text="loading failed", fg="red")
 
     def AddFileToDataBase(self):

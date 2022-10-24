@@ -18,11 +18,6 @@ class ChartPage:
         self.variable = StringVar(self.frame)
         button_read = Button(self.frame, text="Read", command=lambda: self.ShowChart())
         button_read.grid(row=0, column=1, columnspan=2, pady=10)
-        # canvas = Canvas(self.frame, bg="yellow")
-        # canvas.grid(row=0, column=0, sticky="e")
-        # scroll = Scrollbar(self.frame, orient="vertical", command=canvas.yview)
-        # scroll.grid(row=1, column=0, sticky='e')
-        # canvas.configure(yscrollcommand=scroll.set)
 
     def ReadData(self, ms_df, param):
         df = self.chart_creator.clean(ms_df, param, "Date", 100, 200)
@@ -35,17 +30,17 @@ class ChartPage:
         return ms_df
     def ShowChart(self):
         ms_df = self.CreateMsDf()
-        self.CreateChart(ms_df, 1, "NO2")
-        self.CreateChart(ms_df, 2, "VOC")
-        self.CreateChart(ms_df, 3, "PM1")
-        self.CreateChart(ms_df, 4, "PM2")
-        self.CreateChart(ms_df, 5, "PM10")
+        self.CreateChart(ms_df, 1, 0, "NO2")
+        self.CreateChart(ms_df, 2, 0, "VOC")
+        self.CreateChart(ms_df, 3, 0, "PM1")
+        self.CreateChart(ms_df, 1, 1, "PM2")
+        self.CreateChart(ms_df, 2, 1, "PM10")
 
-    def CreateChart(self, ms_df, num_row, param):
+    def CreateChart(self, ms_df, num_row, num_col, param):
         fig = self.ReadData(ms_df, param)
         dataPlot = FigureCanvasTkAgg(fig, master=self.frame)
         dataPlot.draw()
-        dataPlot.get_tk_widget().grid(row=num_row, column=0, pady=1)
+        dataPlot.get_tk_widget().grid(row=num_row, column=num_col, pady=1)
 
     def ReadExistFilesName(self):
         files = self.db.GetAllFile()
@@ -60,7 +55,7 @@ class ChartPage:
     def show(self):
         self.frame.grid(row=0, column=1, sticky="NSEW")
         names = self.ReadExistFilesName()
-        w = OptionMenu(self.frame, self.variable, value=names, command=lambda: self.ShowChart())
+        w = OptionMenu(self.frame, self.variable, *names, command=lambda: self.ShowChart())
         w.grid(row=0, column=0, sticky="NSEW")
         return self
 

@@ -20,7 +20,7 @@ class ChartCreator:
             return datedropna_df
 
     def plot_ts(self, df, param, dateparam):
-        fig = plt.figure(figsize=(8, 2))
+        fig = plt.figure(figsize=(7.4, 2.5))
         plt.plot(df[dateparam], df[param], markersize=1)
         plt.tick_params(axis='x', labelsize=10, rotation=90)
         plt.title(param)
