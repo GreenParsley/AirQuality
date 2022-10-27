@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import create_engine, Float
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.exc import OperationalError
-from sqlalchemy.orm import sessionmaker, declarative_base, relationship
+from sqlalchemy.orm import sessionmaker, declarative_base, relationship, Session
 
 # Using SQLite
 database_name = 'sqlite:///AirQuality.sqlite'
@@ -94,7 +94,7 @@ class TripDto():
 
 
 class AirQuality:
-
+    sess: Session
     def __init__(self):
         self.sess = None
         self.session = None
@@ -113,7 +113,11 @@ class AirQuality:
         file = File(fileName)
         self.sess.add(file)
         self.sess.flush()
-        return file.Id
+        return file
+
+    def UpdateFile(self, file):
+        self.sess.add(file)
+        self.sess.commit()
 
     def AddPositions(self, positions):
         self.sess.add_all(positions)

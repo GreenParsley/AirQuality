@@ -3,15 +3,20 @@ from tkinter import filedialog
 import pandas as pd
 import os
 import glob
+
+from DateTime import DateTime
+
 from file_reader import FileReader
 from cast_models import CastModels
-from airquality_database import AirQuality
+from airquality_database import AirQuality, Measures
 
 
 class FilePage:
     db: AirQuality
     file_reader: FileReader
     cast_models: CastModels
+    start_date: DateTime
+    end_date: DateTime
     def __init__(self, root, db):
         self.db = db
         self.file_reader = FileReader()
@@ -36,27 +41,38 @@ class FilePage:
         return self.path
 
     def ReadFiles(self):
+        self.start_date = None
+        self.end_date = None
         try:
-            id = self.AddFileToDataBase()
+            file = self.AddFileToDataBase()
             csv_files = glob.glob(os.path.join(self.path, "*.csv"))
             for f in csv_files:
                 if "measures" in f:
                     data_measures = self.file_reader.Read(f)
-                    measures = self.cast_models.CastToMeasures(data_measures, id)
+                    measures = self.cast_models.CastToMeasures(data_measures, file.Id)
                     self.db.AddMeasures(measures)
+                    self.FindStartAndEndDate(measures)
                 elif "positions" in f:
                     data_positions = self.file_reader.Read(f)
-                    positions = self.cast_models.CastToPositions(data_positions, id)
+                    positions = self.cast_models.CastToPositions(data_positions, file.Id)
                     self.db.AddPositions(positions)
+            file.StartDate = self.start_date
+            file.EndDate = self.end_date
             self.label_status.config(text="loading success", fg="green")
         except EXCEPTION as e:
             print(e)
             self.label_status.config(text="loading failed", fg="red")
 
+    def FindStartAndEndDate(self, measures):
+        if (self.start_date is None) or (self.start_date > measures[0].Date):
+            self.start_date = measures[0].Date
+        if (self.end_date is None) or (self.end_date < measures[-1].Date):
+            self.end_date = measures[-1].Date
+
     def AddFileToDataBase(self):
         name = self.file_name.get("1.0", 'end-1c')
-        id = self.db.AddFile(name)
-        return id
+        file = self.db.AddFile(name)
+        return file
 
     def GetFrame(self):
         return self.frame
