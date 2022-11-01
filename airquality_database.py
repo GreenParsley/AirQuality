@@ -4,6 +4,7 @@ from sqlalchemy import create_engine, Float
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker, declarative_base, relationship, Session
+from sqlalchemy_utils import database_exists
 
 # Using SQLite
 database_name = 'sqlite:///AirQuality.sqlite'
@@ -73,6 +74,7 @@ class File(Base):
     CreateDate = Column(DateTime, nullable=False)
     StartDate = Column(DateTime, nullable=True)
     EndDate = Column(DateTime, nullable=True)
+    TripType = Column(String, nullable=True)
     Measures = relationship("Measures")
     Positions = relationship("Positions")
 
@@ -83,12 +85,14 @@ class File(Base):
 class TripDto():
     Id = None
     Name = None
+    TripType = None
     StartDate = None
     EndDate = None
 
-    def __init__(self, id, name, start, end):
+    def __init__(self, id, name, trip_type, start, end):
         self.Name = name
         self.Id = id
+        self.TripType = trip_type
         self.StartDate = start
         self.EndDate = end
 
@@ -100,14 +104,11 @@ class AirQuality:
         self.session = None
 
     def Create(self):
-        try:
-            eng.connect()
-        except Exception:
+        if database_exists(database_name) is False:
             Base.metadata.drop_all()
             Base.metadata.create_all()
-        finally:
-            self.session = sessionmaker(bind=eng)
-            self.sess = self.session()
+        self.session = sessionmaker(bind=eng)
+        self.sess = self.session()
 
     def AddFile(self, fileName):
         file = File(fileName)
@@ -122,6 +123,7 @@ class AirQuality:
     def AddPositions(self, positions):
         self.sess.add_all(positions)
         self.sess.commit()
+
 
     def AddMeasures(self, measures):
         self.sess.add_all(measures)
@@ -139,17 +141,21 @@ class AirQuality:
         files = self.GetAllFile()
         trips = []
         for f in files:
-            trips.append(TripDto(f.Id, f.Name, f.StartDate, f.EndDate))
+            trips.append(TripDto(f.Id, f.Name, None, f.StartDate, f.EndDate))
         return trips
 
     def GetAllPositions(self):
         positions = self.sess.query(Positions).all()
-        for position in positions:
-            print(position.Timestamp)
         return positions
 
     def GetAllMeasures(self):
         measures = self.sess.query(Measures).all()
-        for measure in measures:
-            print(measure.Timestamp)
+        return measures
+
+    def GetPositionsByTrip(self, trip_id):
+        positions = self.sess.query(Positions).filter(Positions.FileId == trip_id).all()
+        return positions
+
+    def GetMeasuresByTrip(self, trip_id):
+        measures = self.sess.query(Measures).filter(Measures.FileId == trip_id).all()
         return measures
