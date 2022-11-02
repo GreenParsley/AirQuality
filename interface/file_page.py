@@ -16,6 +16,7 @@ class FilePage:
     end_date: DateTime
     def __init__(self, root, db):
         self.db = db
+        # inicjalizacja obiektów
         self.file_reader = FileReader()
         self.cast_models = CastModels()
         self.frame = Frame(root)
@@ -41,7 +42,7 @@ class FilePage:
         self.start_date = None
         self.end_date = None
         try:
-            file = self.AddFileToDataBase()
+            file = self.AddTripToDataBase()
             csv_files = glob.glob(os.path.join(self.path, "*.csv"))
             for f in csv_files:
                 if "measures" in f:
@@ -67,7 +68,7 @@ class FilePage:
         if (self.end_date is None) or (self.end_date < measures[-1].Date):
             self.end_date = measures[-1].Date
 
-    def AddFileToDataBase(self):
+    def AddTripToDataBase(self):
         name = self.file_name.get("1.0", 'end-1c')
         file = self.db.AddTrip(name)
         return file

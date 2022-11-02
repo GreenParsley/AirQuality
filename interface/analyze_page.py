@@ -2,6 +2,7 @@ from datetime import timedelta
 from tkinter import *
 from tkinter.ttk import Treeview
 from database.airquality_database import AirQuality, Trips
+from models.trip_date import TripDate
 
 
 class AnalyzePage:
@@ -34,12 +35,12 @@ class AnalyzePage:
     def GetFrame(self):
         return self.frame
 
-    def ClearAll(self):
+    def ClearAllTripsFromTable(self):
         for item in self.trips_table.get_children():
             self.trips_table.delete(item)
 
     def Show(self):
-        self.ClearAll()
+        self.ClearAllTripsFromTable()
         trips = self.db.GetAllTrips()
         self.frame.grid(row=0, column=1, sticky="NSEW")
         index = 0
@@ -74,8 +75,8 @@ class AnalyzePage:
             date = m.Date
             if last_trip_id >= len(trip_date):
                 break
-            accurent_trip = trip_date[last_trip_id]
-            if (date >= accurent_trip[0]) and (date <= accurent_trip[1]):
+            current_trip = trip_date[last_trip_id]
+            if (date >= current_trip.start_date) and (date <= current_trip.end_date):
                 if start_measure is None:
                     start_measure = date
                     end_measure = date
@@ -140,7 +141,7 @@ class AnalyzePage:
                 end_date = date
                 continue
             else:
-                trip_date.append([start_date - timedelta(minutes=5), end_date + timedelta(minutes=5)])
+                trip_date.append(TripDate(start_date - timedelta(minutes=5), end_date + timedelta(minutes=5)))
                 start_date = None
                 end_date = None
         return trip_date
