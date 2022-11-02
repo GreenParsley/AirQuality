@@ -1,8 +1,7 @@
 from datetime import timedelta
 from tkinter import *
 from tkinter.ttk import Treeview
-from sqlalchemy import func
-from airquality_database import AirQuality, File
+from database.airquality_database import AirQuality, Trips
 
 
 class AnalyzePage:
@@ -35,13 +34,13 @@ class AnalyzePage:
     def GetFrame(self):
         return self.frame
 
-    def clear_all(self):
+    def ClearAll(self):
         for item in self.trips_table.get_children():
             self.trips_table.delete(item)
 
-    def show(self):
-        self.clear_all()
-        trips = self.db.GetTrips()
+    def Show(self):
+        self.ClearAll()
+        trips = self.db.GetAllTrips()
         self.frame.grid(row=0, column=1, sticky="NSEW")
         index = 0
         for t in trips:
@@ -83,7 +82,7 @@ class AnalyzePage:
                 else:
                     end_measure = date
             elif start_measure is not None:
-                trip = File("Trip_" + str(last_trip_id + 1))
+                trip = Trips("Trip_" + str(last_trip_id + 1))
                 trip.StartDate = start_measure
                 trip.EndDate = end_measure
                 trips.append(trip)
@@ -91,7 +90,7 @@ class AnalyzePage:
                 end_measure = None
                 last_trip_id += 1
         if start_measure is not None:
-            trip = File("Trip_" + str(last_trip_id + 1))
+            trip = Trips("Trip_" + str(last_trip_id + 1))
             trip.StartDate = start_measure
             trip.EndDate = end_measure
             trips.append(trip)
@@ -146,6 +145,6 @@ class AnalyzePage:
                 end_date = None
         return trip_date
 
-    def hide(self):
+    def Hide(self):
         self.frame.grid_remove()
 

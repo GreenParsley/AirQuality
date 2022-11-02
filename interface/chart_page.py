@@ -1,9 +1,8 @@
 from tkinter import *
-from matplotlib import pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from chart_creator import ChartCreator
-from airquality_database import AirQuality
-from cast_models import CastModels
+from utils.chart_creator import ChartCreator
+from database.airquality_database import AirQuality
+from utils.cast_models import CastModels
 
 
 class ChartPage:
@@ -38,12 +37,12 @@ class ChartPage:
 
     def CreateChart(self, ms_df, num_row, num_col, param):
         fig = self.ReadData(ms_df, param)
-        dataPlot = FigureCanvasTkAgg(fig, master=self.frame)
-        dataPlot.draw()
-        dataPlot.get_tk_widget().grid(row=num_row, column=num_col, pady=1)
+        data_plot = FigureCanvasTkAgg(fig, master=self.frame)
+        data_plot.draw()
+        data_plot.get_tk_widget().grid(row=num_row, column=num_col, pady=1)
 
     def ReadExistFilesName(self):
-        files = self.db.GetAllFile()
+        files = self.db.GetAllTrips()
         files_names = []
         for f in files:
             files_names.append(f.Name)
@@ -52,13 +51,13 @@ class ChartPage:
     def GetFrame(self):
         return self.frame
 
-    def show(self):
+    def Show(self):
         self.frame.grid(row=0, column=1, sticky="NSEW")
         names = self.ReadExistFilesName()
         w = OptionMenu(self.frame, self.variable, *names, command=lambda: self.ShowChart())
         w.grid(row=0, column=0, sticky="NSEW")
         return self
 
-    def hide(self):
+    def Hide(self):
         self.frame.grid_remove()
 

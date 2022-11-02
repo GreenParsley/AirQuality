@@ -2,12 +2,11 @@ from datetime import date
 from datetime import datetime
 from sqlalchemy import create_engine, Float
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
-from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker, declarative_base, relationship, Session
 from sqlalchemy_utils import database_exists
 
 # Using SQLite
-database_name = 'sqlite:///AirQuality.sqlite'
+database_name = 'sqlite:///database/AirQuality.sqlite'
 eng = create_engine(database_name, echo=True)
 Base = declarative_base()
 Base.metadata.bind = eng
@@ -29,10 +28,10 @@ class Measures(Base):
     PM10_PlumeAQI = Column(Integer, nullable=True)
     PM2_PlumeAQI = Column(Integer, nullable=True)
     PM1_PlumeAQI = Column(Integer, nullable=True)
-    FileId = Column(Integer, ForeignKey("File.Id"), nullable=False)
+    TripId = Column(Integer, ForeignKey("Trips.Id"), nullable=False)
 
     def __init__(self, timestamp, date, no2, voc, pm10, pm2, pm1, no2_PlumeAQI, voc_PlumeAQI, pm10_PlumeAQI,
-                 pm2_PlumeAQI, pm1_PlumeAQI, fileId):
+                 pm2_PlumeAQI, pm1_PlumeAQI, trip_id):
         self.Timestamp = timestamp
         self.Date = date
         self.NO2 = no2
@@ -45,7 +44,7 @@ class Measures(Base):
         self.PM10_PlumeAQI = pm10_PlumeAQI
         self.PM2_PlumeAQI = pm2_PlumeAQI
         self.PM1_PlumeAQI = pm1_PlumeAQI
-        self.FileId = fileId
+        self.TripId = trip_id
 
 
 class Positions(Base):
@@ -56,18 +55,18 @@ class Positions(Base):
     Date = Column(DateTime, default=datetime.utcnow, nullable=False)
     Latitude = Column(Float, nullable=False)
     Longitude = Column(Float, nullable=False)
-    FileId = Column(Integer, ForeignKey("File.Id"), nullable=False)
+    FileId = Column(Integer, ForeignKey("Trips.Id"), nullable=False)
 
-    def __init__(self, timestamp, date, latitude, longitude, fileId):
+    def __init__(self, timestamp, date, latitude, longitude, trip_id):
         self.Timestamp = timestamp
         self.Date = date
         self.Latitude = latitude
         self.Longitude = longitude
-        self.FileId = fileId
+        self.FileId = trip_id
 
 
-class File(Base):
-    __tablename__ = "File"
+class Trips(Base):
+    __tablename__ = "Trips"
 
     Id = Column(Integer, primary_key=True)
     Name = Column(String, nullable=False)
@@ -82,21 +81,6 @@ class File(Base):
         self.Name = name
         self.CreateDate = date.today()
 
-class TripDto():
-    Id = None
-    Name = None
-    TripType = None
-    StartDate = None
-    EndDate = None
-
-    def __init__(self, id, name, trip_type, start, end):
-        self.Name = name
-        self.Id = id
-        self.TripType = trip_type
-        self.StartDate = start
-        self.EndDate = end
-
-
 class AirQuality:
     sess: Session
     def __init__(self):
@@ -110,14 +94,14 @@ class AirQuality:
         self.session = sessionmaker(bind=eng)
         self.sess = self.session()
 
-    def AddFile(self, fileName):
-        file = File(fileName)
-        self.sess.add(file)
+    def AddTrip(self, tripName):
+        trip = Trips(tripName)
+        self.sess.add(trip)
         self.sess.flush()
-        return file
+        return trip
 
-    def UpdateFile(self, file):
-        self.sess.add(file)
+    def UpdateTrip(self, trip):
+        self.sess.add(trip)
         self.sess.commit()
 
     def AddPositions(self, positions):
@@ -129,20 +113,13 @@ class AirQuality:
         self.sess.add_all(measures)
         self.sess.commit()
 
-    def GetAllFile(self):
-        files = self.sess.query(File).all()
-        return files
+    def GetAllTrips(self):
+        trips = self.sess.query(Trips).all()
+        return trips
 
     def GetCountFiles(self):
-        count = self.sess.query(File).count()
+        count = self.sess.query(Trips).count()
         return count
-
-    def GetTrips(self):
-        files = self.GetAllFile()
-        trips = []
-        for f in files:
-            trips.append(TripDto(f.Id, f.Name, None, f.StartDate, f.EndDate))
-        return trips
 
     def GetAllPositions(self):
         positions = self.sess.query(Positions).all()
@@ -157,5 +134,5 @@ class AirQuality:
         return positions
 
     def GetMeasuresByTrip(self, trip_id):
-        measures = self.sess.query(Measures).filter(Measures.FileId == trip_id).all()
+        measures = self.sess.query(Measures).filter(Measures.TripId == trip_id).all()
         return measures

@@ -10,10 +10,10 @@ class HomePage:
     def GetFrame(self):
         return self.frame
 
-    def show(self):
+    def Show(self):
         self.frame.grid(row=0, column=1, sticky="NSEW")
         return self
 
-    def hide(self):
+    def Hide(self):
         self.frame.grid_remove()
 

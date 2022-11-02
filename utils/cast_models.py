@@ -1,5 +1,5 @@
 from datetime import datetime
-from airquality_database import Positions, Measures
+from database.airquality_database import Positions, Measures
 import pandas as pd
 
 

@@ -1,14 +1,11 @@
 from tkinter import *
 from tkinter import filedialog
-import pandas as pd
 import os
 import glob
-
 from DateTime import DateTime
-
-from file_reader import FileReader
-from cast_models import CastModels
-from airquality_database import AirQuality, Measures
+from utils.file_reader import FileReader
+from utils.cast_models import CastModels
+from database.airquality_database import AirQuality
 
 
 class FilePage:
@@ -25,8 +22,8 @@ class FilePage:
         #Label(self.frame, text="Welcome to the AirQuality app", font=(0, 50), background="green")
         self.frame.grid_rowconfigure(1, minsize=30)
         Label(self.frame, text="Click the Button to Select a Folder:", font=('Aerial 18 bold')).grid(row=0, column=0, sticky="NSEW")
-        button = Button(self.frame, text="Select", command=lambda: self.SelectFile())
-        button.grid(row=1, column=1, columnspan=2, pady=10)
+        button_select = Button(self.frame, text="Select", command=lambda: self.SelectFile())
+        button_select.grid(row=1, column=1, columnspan=2, pady=10)
         button_read = Button(self.frame, text="Read", command=lambda: self.ReadFiles())
         button_read.grid(row=4, column=0, columnspan=2, pady=10)
         Label(self.frame, text="Create name:", font=('Aerial 18 bold')).grid(row=2, column=0, sticky="NSEW")
@@ -58,7 +55,7 @@ class FilePage:
                     self.db.AddPositions(positions)
             file.StartDate = self.start_date
             file.EndDate = self.end_date
-            self.db.UpdateFile(file)
+            self.db.UpdateTrip(file)
             self.label_status.config(text="loading success", fg="green")
         except EXCEPTION as e:
             print(e)
@@ -72,17 +69,17 @@ class FilePage:
 
     def AddFileToDataBase(self):
         name = self.file_name.get("1.0", 'end-1c')
-        file = self.db.AddFile(name)
+        file = self.db.AddTrip(name)
         return file
 
     def GetFrame(self):
         return self.frame
 
-    def show(self):
+    def Show(self):
         self.frame.grid(row=0, column=1, sticky="NSEW")
         return self
 
-    def hide(self):
+    def Hide(self):
         self.frame.grid_remove()
 
 
