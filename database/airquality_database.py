@@ -1,6 +1,6 @@
 from datetime import date
 from datetime import datetime
-from sqlalchemy import create_engine, Float
+from sqlalchemy import create_engine, Float, delete
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.orm import sessionmaker, declarative_base, relationship, Session
 from sqlalchemy_utils import database_exists
@@ -77,9 +77,15 @@ class Trips(Base):
     Measures = relationship("Measures")
     Positions = relationship("Positions")
 
-    def __init__(self, name):
+    def __init__(self, name, start_date=None, end_date=None, trip_type=None):
         self.Name = name
         self.CreateDate = date.today()
+        if start_date is not None:
+            self.StartDate = datetime.strptime(start_date, "%Y-%m-%d %H:%M:%S")
+        if end_date is not None:
+            self.EndDate = datetime.strptime(end_date, "%Y-%m-%d %H:%M:%S")
+        self.TripType = trip_type
+
 
 class AirQuality:
     sess: Session
@@ -111,6 +117,20 @@ class AirQuality:
 
     def AddMeasures(self, measures):
         self.sess.add_all(measures)
+        self.sess.commit()
+
+    def UpdateMeasures(self, measures):
+        self.sess.add_all(measures)
+        self.sess.commit()
+
+    def DeleteMultipleMeasures(self, trip_id):
+        measures_to_delete = delete(Measures).where(Measures.TripId == trip_id)
+        self.sess.execute(measures_to_delete)
+        self.sess.commit()
+
+    def DeleteTrip(self, trip_id):
+        trip_to_delete = delete(Trips).where(Trips.Id == trip_id)
+        self.sess.execute(trip_to_delete)
         self.sess.commit()
 
     def GetAllTrips(self):

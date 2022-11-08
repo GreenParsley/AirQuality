@@ -19,14 +19,16 @@ class ChartPage:
         button_read.grid(row=0, column=1, columnspan=2, pady=10)
 
     def ReadData(self, ms_df, param):
-        df = self.chart_creator.clean(ms_df, param, "Date", 100, 200)
+        df = self.chart_creator.clean(ms_df, param, "Date")
         fig = self.chart_creator.plot_ts(df, param, "Date")
         return fig
 
     def CreateMsDf(self):
-        measures = self.db.GetAllMeasures()
+        trip_id = self.variable.get()
+        measures = self.db.GetMeasuresByTrip(trip_id)
         ms_df = self.cast_models.CastToPandas(measures)
         return ms_df
+
     def ShowChart(self):
         ms_df = self.CreateMsDf()
         self.CreateChart(ms_df, 1, 0, "NO2")
@@ -45,7 +47,7 @@ class ChartPage:
         files = self.db.GetAllTrips()
         files_names = []
         for f in files:
-            files_names.append(f.Name)
+            files_names.append(f.Id)
         return files_names
 
     def GetFrame(self):
