@@ -10,7 +10,7 @@ db = airquality_database.AirQuality()
 db.Create()
 root = Tk()
 root.title("AirQuality")
-#root.geometry('1024x768')
+# root.geometry('1024x768')
 width = root.winfo_screenwidth()
 height = root.winfo_screenheight()
 # setting window size
@@ -23,6 +23,7 @@ max_width = 200
 current_width = min_width  # Increasing width of the frame
 extended = False
 last_page = None
+
 
 def Show():
     global current_width, extended
@@ -50,22 +51,22 @@ def Fill():
     if extended:  # If the frame is exanded show text and remove image
         home_page.config(text='Home page', image='', font=(0, 20))
         read_file.config(text='Read files', image='', font=(0, 20))
-        export_data.config(text='Export data', image='', font=(0, 20))
         analyze_data.config(text='Analyze data', image='', font=(0, 20))
         chart_data.config(text='Chart', image='', font=(0, 20))
     else:
         # Show image again
         home_page.config(image=home, font=(0, 20))
         read_file.config(image=file, font=(0, 20))
-        export_data.config(image=export, font=(0, 20))
         analyze_data.config(image=analyze, font=(0, 20))
         chart_data.config(image=chart, font=(0, 20))
+
 
 def ShowPage(page):
     global last_page
     if last_page is not None:
         last_page.Hide()
     last_page = page.Show()
+
 
 page1 = HomePage(root)
 page2 = FilePage(root, db)
@@ -76,7 +77,6 @@ ShowPage(page1)
 # Define image in menu and resize it
 home = ImageTk.PhotoImage(Image.open('./photo/home.png').resize((40, 40), Image.ANTIALIAS))
 file = ImageTk.PhotoImage(Image.open('./photo/file.png').resize((40, 40), Image.ANTIALIAS))
-export = ImageTk.PhotoImage(Image.open('./photo/export.png').resize((40, 40), Image.ANTIALIAS))
 analyze = ImageTk.PhotoImage(Image.open('./photo/analyze.png').resize((40, 40), Image.ANTIALIAS))
 chart = ImageTk.PhotoImage(Image.open('./photo/chart.png').resize((40, 40), Image.ANTIALIAS))
 
@@ -88,14 +88,12 @@ frame.grid(row=0, column=0)
 # Make the buttons with the icons to be shown
 home_page = Button(frame, image=home, bg='LightSkyBlue2', relief='flat', command=lambda: ShowPage(page1))
 read_file = Button(frame, image=file, bg='LightSkyBlue2', relief='flat', command=lambda: ShowPage(page2))
-export_data = Button(frame, image=export, bg='LightSkyBlue2', relief='flat')
 analyze_data = Button(frame, image=analyze, bg='LightSkyBlue2', relief='flat', command=lambda: ShowPage(page4))
 chart_data = Button(frame, image=chart, bg='LightSkyBlue2', relief='flat', command=lambda: ShowPage(page3))
 
 # Put on the frame
 home_page.grid(row=0, column=0, pady=15)
 read_file.grid(row=1, column=0, pady=15)
-export_data.grid(row=2, column=0, pady=15)
 analyze_data.grid(row=3, column=0, pady=15)
 chart_data.grid(row=4, column=0, pady=15)
 

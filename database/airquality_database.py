@@ -89,6 +89,7 @@ class Trips(Base):
 
 class AirQuality:
     sess: Session
+
     def __init__(self):
         self.sess = None
         self.session = None
@@ -113,7 +114,6 @@ class AirQuality:
     def AddPositions(self, positions):
         self.sess.add_all(positions)
         self.sess.commit()
-
 
     def AddMeasures(self, measures):
         self.sess.add_all(measures)

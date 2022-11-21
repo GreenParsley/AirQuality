@@ -14,28 +14,30 @@ class FilePage:
     cast_models: CastModels
     start_date: DateTime
     end_date: DateTime
+
     def __init__(self, root, db):
         self.db = db
         # inicjalizacja obiektów
         self.file_reader = FileReader()
         self.cast_models = CastModels()
         self.frame = Frame(root)
-        #Label(self.frame, text="Welcome to the AirQuality app", font=(0, 50), background="green")
-        self.frame.grid_rowconfigure(1, minsize=30)
-        Label(self.frame, text="Click the Button to Select a Folder:", font=('Aerial 18 bold')).grid(row=0, column=0, sticky="NSEW")
+        self.frame.grid_rowconfigure(1, minsize=70)
+        self.frame.grid_columnconfigure(1, minsize=350)
+        Label(self.frame, text="Click the Button to Select a Folder:", font=('Aerial 18 bold')).grid(row=1, column=2,
+                                                                                                     sticky="NSEW")
         button_select = Button(self.frame, text="Select", command=lambda: self.SelectFile())
-        button_select.grid(row=1, column=1, columnspan=2, pady=10)
+        button_select.grid(row=2, column=3, columnspan=2, pady=10)
         button_read = Button(self.frame, text="Read", command=lambda: self.ReadFiles())
-        button_read.grid(row=4, column=0, columnspan=2, pady=10)
-        Label(self.frame, text="Create name:", font=('Aerial 18 bold')).grid(row=2, column=0, sticky="NSEW")
+        button_read.grid(row=5, column=2, columnspan=2, pady=10)
+        Label(self.frame, text="Create name:", font=('Aerial 18 bold')).grid(row=3, column=2, sticky="NSEW")
         self.file_name = Text(self.frame, height=1)
-        self.file_name.grid(row=3, column=0, sticky="NSEW")
+        self.file_name.grid(row=4, column=2, sticky="NSEW")
         self.label_status = Label(self.frame, font=('Aerial 18 bold'))
-        self.label_status.grid(row=5, column=0, sticky="NSEW")
+        self.label_status.grid(row=6, column=2, sticky="NSEW")
 
     def SelectFile(self):
         self.path = filedialog.askdirectory(title="Select a File")
-        Label(self.frame, text=self.path, font=13).grid(row=1, column=0, sticky="NSEW")
+        Label(self.frame, text=self.path, font=13).grid(row=2, column=2, sticky="NSEW")
         return self.path
 
     def ReadFiles(self):
@@ -82,5 +84,3 @@ class FilePage:
 
     def Hide(self):
         self.frame.grid_remove()
-
-

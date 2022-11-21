@@ -1,3 +1,4 @@
+import os
 from tkinter import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from utils.chart_creator import ChartCreator
@@ -9,6 +10,7 @@ class ChartPage:
     db: AirQuality
     chart_creator: ChartCreator
     cast_models: CastModels
+
     def __init__(self, root, db):
         self.db = db
         self.chart_creator = ChartCreator()
@@ -30,12 +32,20 @@ class ChartPage:
         return ms_df
 
     def ShowChart(self):
-        ms_df = self.CreateMsDf()
-        self.CreateChart(ms_df, 1, 0, "NO2")
-        self.CreateChart(ms_df, 2, 0, "VOC")
-        self.CreateChart(ms_df, 3, 0, "PM1")
-        self.CreateChart(ms_df, 1, 1, "PM2")
-        self.CreateChart(ms_df, 2, 1, "PM10")
+        self.ms_df = self.CreateMsDf()
+        self.CreateChart(self.ms_df, 1, 0, "NO2")
+        self.CreateChart(self.ms_df, 2, 0, "VOC")
+        self.CreateChart(self.ms_df, 3, 0, "PM1")
+        self.CreateChart(self.ms_df, 1, 1, "PM2")
+        self.CreateChart(self.ms_df, 2, 1, "PM10")
+        button_export = Button(self.frame, text="Export data", command=lambda: self.ExportData(), height=3, width=15)
+        button_export.grid(row=3, column=1, sticky="NW", padx=30, pady=30)
+
+    def ExportData(self):
+        if not os.path.exists('Export'):
+            os.mkdir('Export')
+        file_name = 'Export\\' + self.trip_dictionary.get(int(self.variable.get())) + '.csv'
+        self.ms_df.to_csv(file_name, encoding='utf-8', index=False)
 
     def CreateChart(self, ms_df, num_row, num_col, param):
         fig = self.ReadData(ms_df, param)
@@ -46,8 +56,10 @@ class ChartPage:
     def ReadExistFilesName(self):
         files = self.db.GetAllTrips()
         files_names = []
+        self.trip_dictionary = {}
         for f in files:
             files_names.append(f.Id)
+            self.trip_dictionary[f.Id] = f.Name
         return files_names
 
     def GetFrame(self):
@@ -57,9 +69,12 @@ class ChartPage:
         self.frame.grid(row=0, column=1, sticky="NSEW")
         names = self.ReadExistFilesName()
         w = OptionMenu(self.frame, self.variable, *names, command=lambda: self.ShowChart())
-        w.grid(row=0, column=0, sticky="NSEW")
+        w.config(width=10)
+        w.grid(row=0, column=0, sticky="NSW", padx=50)
         return self
+
+    def GetLastSelectedChartId(self):
+        return self.variable
 
     def Hide(self):
         self.frame.grid_remove()
-
