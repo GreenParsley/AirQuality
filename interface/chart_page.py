@@ -21,8 +21,8 @@ class ChartPage:
         button_read.grid(row=0, column=1, columnspan=2, pady=10)
 
     def ReadData(self, ms_df, param):
-        df = self.chart_creator.clean(ms_df, param, "Date")
-        fig = self.chart_creator.plot_ts(df, param, "Date")
+        df = self.chart_creator.Clean(ms_df, param, "Date")
+        fig = self.chart_creator.PlotTS(df, param, "Date")
         return fig
 
     def CreateMsDf(self):
