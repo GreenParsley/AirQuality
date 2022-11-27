@@ -1,0 +1,11 @@
+_sa_instance_state,VOC,Date,PM2,NO2_PlumeAQI,PM10_PlumeAQI,PM1_PlumeAQI,TripId,NO2,Id,Timestamp,PM10,PM1,VOC_PlumeAQI,PM2_PlumeAQI
+<sqlalchemy.orm.state.InstanceState object at 0x0000024A89219A30>,140,2022-05-11 11:10:24,2.370924,11,5,3,5,26,1206,1652267424,34.160564,26,34,1
+<sqlalchemy.orm.state.InstanceState object at 0x0000024A89219A60>,147,2022-05-11 11:11:24,2.0,12,4,3,5,27,1207,1652267484,3.0,28,3,1
+<sqlalchemy.orm.state.InstanceState object at 0x0000024A89219AC0>,145,2022-05-11 11:12:24,2.0,12,4,3,5,25,1208,1652267544,31.166883,26,31,1
+<sqlalchemy.orm.state.InstanceState object at 0x0000024A89219B20>,148,2022-05-11 11:13:24,2.0,12,4,3,5,27,1209,1652267604,3.0,28,3,1
+<sqlalchemy.orm.state.InstanceState object at 0x0000024A89219B80>,146,2022-05-11 11:14:24,6.691518,12,13,3,5,27,1210,1652267664,94.238205,28,109,1
+<sqlalchemy.orm.state.InstanceState object at 0x0000024A89219BE0>,149,2022-05-11 11:15:24,2.0,12,4,3,5,28,1211,1652267724,8.940443,30,9,1
+<sqlalchemy.orm.state.InstanceState object at 0x0000024A89219C40>,146,2022-05-11 11:16:24,2.0,12,4,3,5,28,1212,1652267784,3.0,29,3,1
+<sqlalchemy.orm.state.InstanceState object at 0x0000024A89219CA0>,146,2022-05-11 11:17:24,2.0,12,4,3,5,28,1213,1652267844,3.048427,30,3,1
+<sqlalchemy.orm.state.InstanceState object at 0x0000024A89219D00>,147,2022-05-11 11:18:24,2.0,12,4,3,5,28,1214,1652267904,3.0,30,3,1
+<sqlalchemy.orm.state.InstanceState object at 0x0000024A89219D60>,145,2022-05-11 11:19:24,2.0,12,4,3,5,28,1215,1652267964,3.0,29,3,1

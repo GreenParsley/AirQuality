@@ -137,6 +137,10 @@ class AirQuality:
         trips = self.sess.query(Trips).all()
         return trips
 
+    def GetTripNameById(self, trip_id):
+        name = self.sess.query(Trips).where(Trips.Id == trip_id)[0].Name
+        return name
+
     def GetCountFiles(self):
         count = self.sess.query(Trips).count()
         return count
@@ -156,3 +160,4 @@ class AirQuality:
     def GetMeasuresByTrip(self, trip_id):
         measures = self.sess.query(Measures).filter(Measures.TripId == trip_id).all()
         return measures
+

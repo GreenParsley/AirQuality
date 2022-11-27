@@ -1,4 +1,6 @@
 import os
+from datetime import datetime
+from statistics import mean
 from tkinter import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from utils.chart_creator import ChartCreator
@@ -16,7 +18,6 @@ class ChartPage:
         self.chart_creator = ChartCreator()
         self.cast_models = CastModels()
         self.frame = Frame(root)
-        self.variable = StringVar(self.frame)
         button_read = Button(self.frame, text="Read", command=lambda: self.ShowChart())
         button_read.grid(row=0, column=1, columnspan=2, pady=10)
 
@@ -26,7 +27,7 @@ class ChartPage:
         return fig
 
     def CreateMsDf(self):
-        trip_id = self.variable.get()
+        trip_id = self.name_text.get("1.0", 'end-1c')
         measures = self.db.GetMeasuresByTrip(trip_id)
         ms_df = self.cast_models.CastToPandas(measures)
         return ms_df
@@ -35,46 +36,99 @@ class ChartPage:
         self.ms_df = self.CreateMsDf()
         self.CreateChart(self.ms_df, 1, 0, "NO2")
         self.CreateChart(self.ms_df, 2, 0, "VOC")
-        self.CreateChart(self.ms_df, 3, 0, "PM1")
-        self.CreateChart(self.ms_df, 1, 1, "PM2")
-        self.CreateChart(self.ms_df, 2, 1, "PM10")
-        button_export = Button(self.frame, text="Export data", command=lambda: self.ExportData(), height=3, width=15)
-        button_export.grid(row=3, column=1, sticky="NW", padx=30, pady=30)
+        self.CreateChart(self.ms_df, 3, 0, "PM1", 6)
+        self.CreateChart(self.ms_df, 1, 1, "PM2", span_col=3)
+        self.CreateChart(self.ms_df, 2, 1, "PM10", span_col=3)
+        button_export = Button(self.frame, text="Export data", command=lambda: self.ExportData())
+        button_export.grid(row=7, column=2, sticky="W")
+        self.ShowStatistics()
 
     def ExportData(self):
         if not os.path.exists('Export'):
             os.mkdir('Export')
-        file_name = 'Export\\' + self.trip_dictionary.get(int(self.variable.get())) + '.csv'
+        file_name = 'Export\\' + self.db.GetTripNameById(self.name_text.get("1.0", 'end-1c')) + '.csv'
         self.ms_df.to_csv(file_name, encoding='utf-8', index=False)
 
-    def CreateChart(self, ms_df, num_row, num_col, param):
+    def CreateChart(self, ms_df, num_row, num_col, param, span_row=1, span_col=1):
         fig = self.ReadData(ms_df, param)
         data_plot = FigureCanvasTkAgg(fig, master=self.frame)
         data_plot.draw()
-        data_plot.get_tk_widget().grid(row=num_row, column=num_col, pady=1)
+        data_plot.get_tk_widget().grid(row=num_row, column=num_col, pady=1, rowspan=span_row, columnspan=span_col)
 
-    def ReadExistFilesName(self):
-        files = self.db.GetAllTrips()
-        files_names = []
-        self.trip_dictionary = {}
-        for f in files:
-            files_names.append(f.Id)
-            self.trip_dictionary[f.Id] = f.Name
-        return files_names
+    def ShowStatistics(self):
+        stat_options = ["", "Average", "Min", "Max"]
+        self.variable = StringVar(self.frame)
+        statistics_drop_list = OptionMenu(self.frame, self.variable, *stat_options)
+        statistics_drop_list.grid(row=3, column=1, sticky="W")
+        self.start_text = Text(self.frame, height=1, width=20)
+        self.start_text.grid(row=3, column=2, sticky="W")
+        self.start_text.insert(END, self.ms_df["Date"][0])
+        self.end_text = Text(self.frame, height=1, width=20)
+        self.end_text.grid(row=3, column=3, sticky="W")
+        self.end_text.insert(END, self.ms_df["Date"][len(self.ms_df)-1])
+        self.label_no2 = Label(self.frame, text="NO2:")
+        self.label_no2.grid(row=4, column=1, sticky="W")
+        self.label_voc = Label(self.frame, text="VOC:")
+        self.label_voc.grid(row=5, column=1, sticky="W")
+        self.label_pm1 = Label(self.frame, text="PM1:")
+        self.label_pm1.grid(row=6, column=1, sticky="W")
+        self.label_pm2 = Label(self.frame, text="PM2.5:")
+        self.label_pm2.grid(row=7, column=1, sticky="W")
+        self.label_pm10 = Label(self.frame, text="PM10:")
+        self.label_pm10.grid(row=8, column=1, sticky="W")
+        Button(self.frame, text="Update", command=lambda: self.UpdateStatisticData()).grid(row=5, column=2, sticky="W")
+
+    def GetFilteredStatisticData(self):
+        selected_id = self.FindIndexForDate()
+        startparam = self.ms_df["Date"][selected_id[0]]
+        endparam = self.ms_df["Date"][selected_id[1]]
+        filter_ts = (self.ms_df["Date"] <= endparam) & (self.ms_df["Date"] >= startparam)
+        ms_filtered_df = self.ms_df[filter_ts]
+        return ms_filtered_df.dropna()
+
+    def FindIndexForDate(self):
+        start_date = datetime.strptime(self.start_text.get("1.0", 'end-1c'), "%Y-%m-%d %H:%M:%S")
+        end_date = datetime.strptime(self.end_text.get("1.0", 'end-1c'), "%Y-%m-%d %H:%M:%S")
+        start_id = 0
+        end_id = len(self.ms_df["Date"])-1
+        for i in range(len(self.ms_df["Date"])):
+            current_date = datetime.strptime(str(self.ms_df["Date"][i]), "%Y-%m-%d %H:%M:%S")
+            if start_date >= current_date:
+                start_id = i
+            if end_date >= current_date:
+                end_id = i
+        return (start_id, end_id)
+
+
+    def UpdateStatisticData(self):
+        ms_filtered_df = self.GetFilteredStatisticData()
+        self.label_no2.config(text="NO2: " + self.CalculateValue(ms_filtered_df, "NO2"))
+        self.label_voc.config(text="VOC: " + self.CalculateValue(ms_filtered_df, "VOC"))
+        self.label_pm1.config(text="PM1: " + self.CalculateValue(ms_filtered_df, "PM1"))
+        self.label_pm2.config(text="PM2: " + self.CalculateValue(ms_filtered_df, "PM2"))
+        self.label_pm10.config(text="PM10: " + self.CalculateValue(ms_filtered_df, "PM10"))
+
+    def CalculateValue(self, ms_df, col_name):
+        operation = self.variable.get()
+        if operation == "":
+            return ""
+        elif operation == "Average":
+            return str(mean(ms_df[col_name]))
+        elif operation == "Min":
+            return str(min(ms_df[col_name]))
+        else:
+            return str(max(ms_df[col_name]))
 
     def GetFrame(self):
         return self.frame
 
     def Show(self):
         self.frame.grid(row=0, column=1, sticky="NSEW")
-        names = self.ReadExistFilesName()
-        w = OptionMenu(self.frame, self.variable, *names, command=lambda: self.ShowChart())
-        w.config(width=10)
-        w.grid(row=0, column=0, sticky="NSW", padx=50)
+        label = Label(self.frame, text="ID:")
+        label.grid(row=0, column=0, sticky="W", padx=20)
+        self.name_text = Text(self.frame, height=1, width=20)
+        self.name_text.grid(row=0, column=0, sticky="W", padx=50)
         return self
-
-    def GetLastSelectedChartId(self):
-        return self.variable
 
     def Hide(self):
         self.frame.grid_remove()
