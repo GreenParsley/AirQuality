@@ -86,7 +86,6 @@ class Trips(Base):
             self.EndDate = datetime.strptime(end_date, "%Y-%m-%d %H:%M:%S")
         self.TripType = trip_type
 
-
 class AirQuality:
     sess: Session
 
@@ -107,16 +106,16 @@ class AirQuality:
         self.sess.flush()
         return trip
 
-    def UpdateTrip(self, trip):
-        self.sess.add(trip)
-        self.sess.commit()
-
     def AddPositions(self, positions):
         self.sess.add_all(positions)
         self.sess.commit()
 
     def AddMeasures(self, measures):
         self.sess.add_all(measures)
+        self.sess.commit()
+
+    def UpdateTrip(self, trip):
+        self.sess.add(trip)
         self.sess.commit()
 
     def UpdateMeasures(self, measures):
@@ -138,7 +137,7 @@ class AirQuality:
         return trips
 
     def GetTripNameById(self, trip_id):
-        name = self.sess.query(Trips).where(Trips.Id == trip_id)[0].Name
+        name = self.sess.query(Trips).where(Trips.Id == trip_id)[0].Nameint
         return name
 
     def GetCountFiles(self):

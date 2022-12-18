@@ -149,10 +149,30 @@ class AnalyzePage:
             if should_update_index is True:
                 last_trip_index += 1
                 should_update_index = False
+        self.EstimateValueForMeasures(measures_to_update)
         self.db.UpdateMeasures(measures_to_update)
         trip_id = self.variable.get()
         self.db.DeleteMultipleMeasures(trip_id)
         self.db.DeleteTrip(trip_id)
+
+    def EstimateValueForMeasures(self, measures):
+        last_trip_id = 0
+        for i in range(1, len(measures)-1):
+            if last_trip_id != measures[i].TripId:
+                last_trip_id = measures[i].TripId
+                continue
+            if (measures[i+1].TripId != last_trip_id) or (measures[i-1].TripId != last_trip_id):
+                continue
+            if measures[i].NO2 == 0:
+                measures[i].NO2 = (measures[i+1].NO2 + measures[i-1].NO2) / 2
+            if measures[i].VOC == 0:
+                measures[i].VOC = (measures[i+1].VOC + measures[i-1].VOC) / 2
+            if measures[i].PM10 == 0:
+                measures[i].PM10 = (measures[i+1].PM10 + measures[i-1].PM10) / 2
+            if measures[i].PM2 == 0:
+                measures[i].PM2 = (measures[i+1].PM2 + measures[i-1].PM2) / 2
+            if measures[i].PM1 == 0:
+                measures[i].PM1 = (measures[i+1].PM1 + measures[i-1].PM1) / 2
 
     def CreateEditPanel(self):
         Label(self.frame, text="Name:", anchor=CENTER).grid(row=3, column=1, sticky="W", padx=10, columnspan=2)
