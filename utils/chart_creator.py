@@ -22,7 +22,7 @@ class ChartCreator:
     def PlotTS(self, df, param, dateparam):
         fig = plt.figure(figsize=(7.4, 2.5))
         plt.plot(df[dateparam], df[param], markersize=1)
-        plt.tick_params(axis='x', labelsize=10, rotation=90)
+        plt.tick_params(axis='x', labelsize=8, rotation=90)
         plt.title(param)
         plt.tight_layout()
         return fig

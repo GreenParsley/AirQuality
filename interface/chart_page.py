@@ -1,8 +1,10 @@
 import os
 from datetime import datetime
-from statistics import mean
+from statistics import mean, median
 from tkinter import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from numpy import sort
+
 from utils.chart_creator import ChartCreator
 from database.airquality_database import AirQuality
 from utils.cast_models import CastModels
@@ -56,13 +58,16 @@ class ChartPage:
         data_plot.get_tk_widget().grid(row=num_row, column=num_col, pady=1, rowspan=span_row, columnspan=span_col)
 
     def ShowStatistics(self):
-        stat_options = ["", "Average", "Min", "Max"]
+        stat_options = ["", "Average", "Median", "Min", "Max", "Percentile"]
         self.variable = StringVar(self.frame)
         statistics_drop_list = OptionMenu(self.frame, self.variable, *stat_options)
         statistics_drop_list.grid(row=3, column=1, sticky="W")
         self.start_text = Text(self.frame, height=1, width=20)
         self.start_text.grid(row=3, column=2, sticky="W")
         self.start_text.insert(END, self.ms_df["Date"][0])
+        Label(self.frame, text="Percentile: ").grid(row=4, column=2, sticky="E")
+        self.percentile_text = Text(self.frame, height=1, width=20)
+        self.percentile_text.grid(row=4, column=3, sticky="W")
         self.end_text = Text(self.frame, height=1, width=20)
         self.end_text.grid(row=3, column=3, sticky="W")
         self.end_text.insert(END, self.ms_df["Date"][len(self.ms_df)-1])
@@ -114,8 +119,17 @@ class ChartPage:
             return ""
         elif operation == "Average":
             return str(mean(ms_df[col_name]))
+        elif operation == "Median":
+            return str(median(ms_df[col_name]))
         elif operation == "Min":
             return str(min(ms_df[col_name]))
+        elif operation == "Percentile":
+            list = sort(ms_df[col_name])
+            value_of_percentile = int(self.percentile_text.get("1.0", 'end-1c'))/100
+            values_of_100_percent = len(list)
+            id_percentile = round(value_of_percentile * values_of_100_percent)
+            percentile = ms_df[col_name][id_percentile]
+            return str(percentile)
         else:
             return str(max(ms_df[col_name]))
 

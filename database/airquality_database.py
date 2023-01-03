@@ -55,7 +55,7 @@ class Positions(Base):
     Date = Column(DateTime, default=datetime.utcnow, nullable=False)
     Latitude = Column(Float, nullable=False)
     Longitude = Column(Float, nullable=False)
-    FileId = Column(Integer, ForeignKey("Trips.Id"), nullable=False)
+    TripId = Column(Integer, ForeignKey("Trips.Id"), nullable=False)
 
     def __init__(self, timestamp, date, latitude, longitude, trip_id):
         self.Timestamp = timestamp
@@ -137,7 +137,7 @@ class AirQuality:
         return trips
 
     def GetTripNameById(self, trip_id):
-        name = self.sess.query(Trips).where(Trips.Id == trip_id)[0].Nameint
+        name = self.sess.query(Trips).where(Trips.Id == trip_id)[0].Name
         return name
 
     def GetCountFiles(self):
@@ -153,8 +153,11 @@ class AirQuality:
         return measures
 
     def GetPositionsByTrip(self, trip_id):
-        positions = self.sess.query(Positions).filter(Positions.FileId == trip_id).all()
+        positions = self.sess.query(Positions).filter(Positions.TripId == trip_id).all()
         return positions
+
+    def GetMeasuresByDate(self, start, end):
+        pass
 
     def GetMeasuresByTrip(self, trip_id):
         measures = self.sess.query(Measures).filter(Measures.TripId == trip_id).all()
