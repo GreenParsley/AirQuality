@@ -76,13 +76,14 @@ page2 = FilePage(root, db)
 page3 = ChartPage(root, db)
 page4 = AnalyzePage(root, db)
 page5 = RawChartPage(root, db)
+ShowPage(page1)
 
 # Define image in menu and resize it
-home = ImageTk.PhotoImage(Image.open('./photo/home.png').resize((40, 40), Image.ANTIALIAS))
-file = ImageTk.PhotoImage(Image.open('./photo/file.png').resize((40, 40), Image.ANTIALIAS))
-analyze = ImageTk.PhotoImage(Image.open('./photo/analyze.png').resize((40, 40), Image.ANTIALIAS))
-chart = ImageTk.PhotoImage(Image.open('./photo/chart.png').resize((40, 40), Image.ANTIALIAS))
-raw_chart = ImageTk.PhotoImage(Image.open('./photo/rawdata.png').resize((40, 40), Image.ANTIALIAS))
+home = ImageTk.PhotoImage(Image.open('./photo/home.png').resize((40, 40)))
+file = ImageTk.PhotoImage(Image.open('./photo/file.png').resize((40, 40)))
+analyze = ImageTk.PhotoImage(Image.open('./photo/analyze.png').resize((40, 40)))
+chart = ImageTk.PhotoImage(Image.open('./photo/chart.png').resize((40, 40)))
+raw_chart = ImageTk.PhotoImage(Image.open('./photo/rawdata.png').resize((40, 40)))
 
 root.update()  # For the width to get updated
 

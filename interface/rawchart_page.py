@@ -4,7 +4,6 @@ from statistics import mean, median
 from tkinter import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from numpy import sort
-
 from utils.chart_creator import ChartCreator
 from database.airquality_database import AirQuality
 from utils.cast_models import CastModels
@@ -21,7 +20,7 @@ class RawChartPage:
         self.cast_models = CastModels()
         self.frame = Frame(root)
         button_read = Button(self.frame, text="Read", command=lambda: self.ShowChart())
-        button_read.grid(row=0, column=3, columnspan=2, pady=10)
+        button_read.grid(row=0, column=2, columnspan=2, pady=10)
 
     def ReadData(self, ms_df, param):
         df = self.chart_creator.Clean(ms_df, param, "Date")
@@ -29,9 +28,9 @@ class RawChartPage:
         return fig
 
     def CreateMsDf(self):
-        measures_start = datetime.strptime(self.start_data_text.get("1.0", 'end-1c'), "%Y-%m-%d %H:%M:%S")
-        measures_end = datetime.strptime(self.end_data_text.get("1.0", 'end-1c'), "%Y-%m-%d %H:%M:%S")
-        measures = self.db.GetMeasuresByDate(measures_start, measures_end)
+        start = datetime.strptime(self.start_date_text.get("1.0", 'end-1c').replace('\n', ''), "%Y-%m-%d %H:%M:%S")
+        end = datetime.strptime(self.end_date_text.get("1.0", 'end-1c').replace('\n', ''), "%Y-%m-%d %H:%M:%S")
+        measures = self.db.GetMeasuresByDate(start, end)
         ms_df = self.cast_models.CastToPandas(measures)
         return ms_df
 
@@ -56,14 +55,14 @@ class RawChartPage:
         self.frame.grid(row=0, column=1, sticky="NSEW")
         label_start = Label(self.frame, text="Start:")
         label_start.grid(row=0, column=0, sticky="W", padx=20)
-        self.start_data_text = Text(self.frame, height=1, width=20)
-        self.start_data_text.grid(row=0, column=0, sticky="W", padx=50)
-        # self.start_data_text.insert(END, self.db.Measures.Date[0])
+        self.start_date_text = Text(self.frame, height=1, width=20)
+        self.start_date_text.grid(row=0, column=0, sticky="W", padx=50)
+        self.start_date_text.insert(END, str(datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")))
         label_end = Label(self.frame, text="End:")
         label_end.grid(row=0, column=1, sticky="W", padx=20)
-        self.end_data_text = Text(self.frame, height=1, width=20)
-        self.end_data_text.grid(row=0, column=1, sticky="W", padx=50)
-        # self.end_data_text.insert(END, self.db.Measures.Date[-1])
+        self.end_date_text = Text(self.frame, height=1, width=20)
+        self.end_date_text.grid(row=0, column=1, sticky="W", padx=50)
+        self.end_date_text.insert(END, str(datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")))
         return self
 
     def Hide(self):

@@ -17,7 +17,6 @@ class FilePage:
 
     def __init__(self, root, db):
         self.db = db
-        # inicjalizacja obiektów
         self.file_reader = FileReader()
         self.cast_models = CastModels()
         self.frame = Frame(root)

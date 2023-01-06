@@ -32,34 +32,14 @@ class AnalyzePage:
         self.trips_table.heading("StartDate", text="StartDate", anchor=CENTER)
         self.trips_table.heading("EndDate", text="EndDate", anchor=CENTER)
 
-    def GetFrame(self):
-        return self.frame
 
     def ClearAllTripsFromTable(self):
         for item in self.trips_table.get_children():
             self.trips_table.delete(item)
 
-    def Show(self):
-        self.ClearAllTripsFromTable()
-        trips = self.db.GetAllTrips()
-        self.frame.grid(row=0, column=1, sticky="NSEW")
-        index = 0
-        for t in trips:
-            self.trips_table.insert(parent='', index='end', iid=index, text='',
-                                    values=(t.Id, t.Name, t.TripType, t.StartDate, t.EndDate))
-            index += 1
-        id_trips = []
-        for t in trips:
-            id_trips.append(t.Id)
-
-        drop_list = OptionMenu(self.frame, self.variable, *id_trips)
-        drop_list.grid(row=1, column=0, sticky="NSEW")
-        button = Button(self.frame, text="Analyze", command=lambda: self.AnalyzeTrip())
-        button.grid(row=2, column=0, sticky="NSEW")
-        return self
 
     def AnalyzeTrip(self):
-        trip_id = self.variable.get()
+        trip_id = self.id_text.get("1.0", 'end-1c')
         self.measures = self.db.GetMeasuresByTrip(trip_id)
         positions = self.db.GetPositionsByTrip(trip_id)
         trip_date = self.GetTripsFromPositions(positions)
@@ -151,7 +131,7 @@ class AnalyzePage:
                 should_update_index = False
         self.EstimateValueForMeasures(measures_to_update)
         self.db.UpdateMeasures(measures_to_update)
-        trip_id = self.variable.get()
+        trip_id = self.id_text.get("1.0", 'end-1c')
         self.db.DeleteMultipleMeasures(trip_id)
         self.db.DeleteTrip(trip_id)
 
@@ -205,8 +185,8 @@ class AnalyzePage:
     def SaveTripChanges(self):
         if self.table_index == -1:
             return
-        name = self.name_text.get("1.0", END)
-        type = self.type_text.get("1.0", END)
+        name = self.name_text.get("1.0", END).replace('\n', '')
+        type = self.type_text.get("1.0", END).replace('\n', '')
         self.analyzed_trips_table.set(self.table_index, 1, name)
         self.analyzed_trips_table.set(self.table_index, 2, type)
 
@@ -228,6 +208,31 @@ class AnalyzePage:
                 start_date = None
                 end_date = None
         return trip_date
+    def GetFrame(self):
+        return self.frame
+
+    def Show(self):
+        self.ClearAllTripsFromTable()
+        trips = self.db.GetAllTrips()
+        self.frame.grid(row=0, column=1, sticky="NSEW")
+        index = 0
+        for t in trips:
+            self.trips_table.insert(parent='', index='end', iid=index, text='',
+                                    values=(t.Id, t.Name, t.TripType, t.StartDate, t.EndDate))
+            index += 1
+        id_trips = []
+        for t in trips:
+            id_trips.append(t.Id)
+
+        label = Label(self.frame, text="ID:")
+        label.grid(row=1, column=0, sticky="W", padx=20)
+        self.id_text = Text(self.frame, height=1, width=20)
+        self.id_text.grid(row=1, column=0, sticky="W", padx=50)
+        button = Button(self.frame, text="Analyze", command=lambda: self.AnalyzeTrip())
+        button.grid(row=2, column=0, sticky="NSEW")
+        button = Button(self.frame, text="Analyze", command=lambda: self.AnalyzeTrip())
+        button.grid(row=2, column=0, sticky="NSEW")
+        return self
 
     def Hide(self):
         self.frame.grid_remove()

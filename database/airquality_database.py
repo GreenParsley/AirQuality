@@ -1,5 +1,8 @@
 from datetime import date
 from datetime import datetime
+from operator import and_
+from tkinter import EXCEPTION
+
 from sqlalchemy import create_engine, Float, delete
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.orm import sessionmaker, declarative_base, relationship, Session
@@ -62,7 +65,7 @@ class Positions(Base):
         self.Date = date
         self.Latitude = latitude
         self.Longitude = longitude
-        self.FileId = trip_id
+        self.TripId = trip_id
 
 
 class Trips(Base):
@@ -157,7 +160,8 @@ class AirQuality:
         return positions
 
     def GetMeasuresByDate(self, start, end):
-        pass
+        measures = self.sess.query(Measures).filter(and_(Measures.Date >= start, Measures.Date <= end)).all()
+        return measures
 
     def GetMeasuresByTrip(self, trip_id):
         measures = self.sess.query(Measures).filter(Measures.TripId == trip_id).all()
