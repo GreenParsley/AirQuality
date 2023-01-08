@@ -21,6 +21,16 @@ class RawChartPage:
         self.frame = Frame(root)
         button_read = Button(self.frame, text="Read", command=lambda: self.ShowChart())
         button_read.grid(row=0, column=2, columnspan=2, pady=10)
+        label_start = Label(self.frame, text="Start:")
+        label_start.grid(row=0, column=0, sticky="W", padx=20)
+        self.start_date_text = Text(self.frame, height=1, width=20)
+        self.start_date_text.grid(row=0, column=0, sticky="W", padx=50)
+        self.start_date_text.insert(END, str(datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")))
+        label_end = Label(self.frame, text="End:")
+        label_end.grid(row=0, column=1, sticky="W", padx=20)
+        self.end_date_text = Text(self.frame, height=1, width=20)
+        self.end_date_text.grid(row=0, column=1, sticky="W", padx=50)
+        self.end_date_text.insert(END, str(datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")))
 
     def ReadData(self, ms_df, param):
         df = self.chart_creator.Clean(ms_df, param, "Date")
@@ -36,6 +46,8 @@ class RawChartPage:
 
     def ShowChart(self):
         self.ms_df = self.CreateMsDf()
+        if self.ms_df.empty:
+            return
         self.CreateChart(self.ms_df, 1, 0, "NO2")
         self.CreateChart(self.ms_df, 2, 0, "VOC")
         self.CreateChart(self.ms_df, 3, 0, "PM1", 6)
@@ -53,16 +65,6 @@ class RawChartPage:
 
     def Show(self):
         self.frame.grid(row=0, column=1, sticky="NSEW")
-        label_start = Label(self.frame, text="Start:")
-        label_start.grid(row=0, column=0, sticky="W", padx=20)
-        self.start_date_text = Text(self.frame, height=1, width=20)
-        self.start_date_text.grid(row=0, column=0, sticky="W", padx=50)
-        self.start_date_text.insert(END, str(datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")))
-        label_end = Label(self.frame, text="End:")
-        label_end.grid(row=0, column=1, sticky="W", padx=20)
-        self.end_date_text = Text(self.frame, height=1, width=20)
-        self.end_date_text.grid(row=0, column=1, sticky="W", padx=50)
-        self.end_date_text.insert(END, str(datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")))
         return self
 
     def Hide(self):

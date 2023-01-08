@@ -21,6 +21,10 @@ class ChartPage:
         self.frame = Frame(root)
         button_read = Button(self.frame, text="Read", command=lambda: self.ShowChart())
         button_read.grid(row=0, column=1, columnspan=2, pady=10)
+        label = Label(self.frame, text="ID:")
+        label.grid(row=0, column=0, sticky="W", padx=20)
+        self.name_text = Text(self.frame, height=1, width=20)
+        self.name_text.grid(row=0, column=0, sticky="W", padx=50)
 
     def ReadData(self, ms_df, param):
         df = self.chart_creator.Clean(ms_df, param, "Date")
@@ -137,10 +141,6 @@ class ChartPage:
 
     def Show(self):
         self.frame.grid(row=0, column=1, sticky="NSEW")
-        label = Label(self.frame, text="ID:")
-        label.grid(row=0, column=0, sticky="W", padx=20)
-        self.name_text = Text(self.frame, height=1, width=20)
-        self.name_text.grid(row=0, column=0, sticky="W", padx=50)
         return self
 
     def Hide(self):
