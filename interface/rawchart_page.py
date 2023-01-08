@@ -31,6 +31,8 @@ class RawChartPage:
         self.end_date_text = Text(self.frame, height=1, width=20)
         self.end_date_text.grid(row=0, column=1, sticky="W", padx=50)
         self.end_date_text.insert(END, str(datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")))
+        self.label_info = Label(self.frame, text="")
+        self.label_info.grid(row=0, column=4, sticky="W", padx=20)
 
     def ReadData(self, ms_df, param):
         df = self.chart_creator.Clean(ms_df, param, "Date")
@@ -47,12 +49,15 @@ class RawChartPage:
     def ShowChart(self):
         self.ms_df = self.CreateMsDf()
         if self.ms_df.empty:
+            self.label_info.config(text="No data for this date", fg="red")
             return
+        else:
+            self.label_info.config(text="Loading success", fg="green")
         self.CreateChart(self.ms_df, 1, 0, "NO2")
         self.CreateChart(self.ms_df, 2, 0, "VOC")
         self.CreateChart(self.ms_df, 3, 0, "PM1", 6)
-        self.CreateChart(self.ms_df, 1, 1, "PM2", span_col=3)
-        self.CreateChart(self.ms_df, 2, 1, "PM10", span_col=3)
+        self.CreateChart(self.ms_df, 1, 1, "PM2", span_col=4)
+        self.CreateChart(self.ms_df, 2, 1, "PM10", span_col=4)
 
     def CreateChart(self, ms_df, num_row, num_col, param, span_row=1, span_col=1):
         fig = self.ReadData(ms_df, param)

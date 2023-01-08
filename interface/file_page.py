@@ -58,10 +58,10 @@ class FilePage:
             file.StartDate = self.start_date
             file.EndDate = self.end_date
             self.db.UpdateTrip(file)
-            self.label_status.config(text="loading success", fg="green")
+            self.label_status.config(text="Loading success", fg="green")
         except EXCEPTION as e:
             print(e)
-            self.label_status.config(text="loading failed", fg="red")
+            self.label_status.config(text="Loading failed", fg="red")
 
     def FindStartAndEndDate(self, measures):
         if (self.start_date is None) or (self.start_date > measures[0].Date):
