@@ -1,0 +1,6 @@
+DateTime==5.0
+Pillow==9.4.0
+SQLAlchemy==1.4.46
+SQLAlchemy-Utils==0.39.0
+matplotlib==3.6.3
+pandas==1.5.2
