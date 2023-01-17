@@ -1,15 +1,13 @@
 from datetime import date
 from datetime import datetime
 from operator import and_
-from tkinter import EXCEPTION
-
 from sqlalchemy import create_engine, Float, delete
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.orm import sessionmaker, declarative_base, relationship, Session
 from sqlalchemy_utils import database_exists
 
 # Using SQLite
-database_name = 'sqlite:///database/AirQuality.sqlite'
+database_name = 'sqlite:///./database/AirQuality.sqlite'
 eng = create_engine(database_name, echo=True)
 Base = declarative_base()
 Base.metadata.bind = eng

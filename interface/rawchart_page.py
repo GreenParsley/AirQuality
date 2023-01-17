@@ -1,9 +1,6 @@
-import os
 from datetime import datetime
-from statistics import mean, median
 from tkinter import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from numpy import sort
 from utils.chart_creator import ChartCreator
 from database.airquality_database import AirQuality
 from utils.cast_models import CastModels
