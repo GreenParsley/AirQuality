@@ -1,14 +1,19 @@
+import os
 from datetime import timedelta
 from tkinter import *
 from tkinter.ttk import Treeview
+import numpy
+from numpy import mean, sort
+from pandas import DataFrame
 from database.airquality_database import AirQuality, Trips
 from models.trip_date import TripDate
-
+from utils.cast_models import CastModels
 
 class AnalyzePage:
     db: AirQuality
 
     def __init__(self, root, db):
+        self.cast_models = CastModels()
         self.db = db
         self.frame = Frame(root)
         self.variable = StringVar(self.frame)
@@ -32,11 +37,9 @@ class AnalyzePage:
         self.trips_table.heading("StartDate", text="StartDate", anchor=CENTER)
         self.trips_table.heading("EndDate", text="EndDate", anchor=CENTER)
 
-
     def ClearAllTripsFromTable(self):
         for item in self.trips_table.get_children():
             self.trips_table.delete(item)
-
 
     def AnalyzeTrip(self):
         trip_id = self.id_text.get("1.0", 'end-1c')
@@ -137,22 +140,22 @@ class AnalyzePage:
 
     def EstimateValueForMeasures(self, measures):
         last_trip_id = 0
-        for i in range(1, len(measures)-1):
+        for i in range(1, len(measures) - 1):
             if last_trip_id != measures[i].TripId:
                 last_trip_id = measures[i].TripId
                 continue
-            if (measures[i+1].TripId != last_trip_id) or (measures[i-1].TripId != last_trip_id):
+            if (measures[i + 1].TripId != last_trip_id) or (measures[i - 1].TripId != last_trip_id):
                 continue
             if measures[i].NO2 == 0:
-                measures[i].NO2 = (measures[i+1].NO2 + measures[i-1].NO2) / 2
+                measures[i].NO2 = (measures[i + 1].NO2 + measures[i - 1].NO2) / 2
             if measures[i].VOC == 0:
-                measures[i].VOC = (measures[i+1].VOC + measures[i-1].VOC) / 2
+                measures[i].VOC = (measures[i + 1].VOC + measures[i - 1].VOC) / 2
             if measures[i].PM10 == 0:
-                measures[i].PM10 = (measures[i+1].PM10 + measures[i-1].PM10) / 2
+                measures[i].PM10 = (measures[i + 1].PM10 + measures[i - 1].PM10) / 2
             if measures[i].PM2 == 0:
-                measures[i].PM2 = (measures[i+1].PM2 + measures[i-1].PM2) / 2
+                measures[i].PM2 = (measures[i + 1].PM2 + measures[i - 1].PM2) / 2
             if measures[i].PM1 == 0:
-                measures[i].PM1 = (measures[i+1].PM1 + measures[i-1].PM1) / 2
+                measures[i].PM1 = (measures[i + 1].PM1 + measures[i - 1].PM1) / 2
 
     def CreateEditPanel(self):
         Label(self.frame, text="Name:", anchor=CENTER).grid(row=3, column=1, sticky="W", padx=10, columnspan=2)
@@ -208,6 +211,50 @@ class AnalyzePage:
                 start_date = None
                 end_date = None
         return trip_date
+
+    def ExportStatisticData(self, data, trip_name):
+        if not os.path.exists('Export'):
+            os.mkdir('Export')
+        file_name = 'Export\\' + "Statistic_data_" + str(trip_name) + '.csv'
+        data.to_csv(file_name, encoding='utf-8', index=True)
+
+    def CreateSdDf(self, trip_id):
+        statistic_data = self.db.GetMeasuresByTrip(trip_id)
+        sd_df = self.cast_models.CastToPandas(statistic_data)
+        return sd_df.dropna()
+
+    def CalculateStatisticValue(self, sd_df, col_name):
+        mean_value = mean(sd_df[col_name])
+        min_value = min(sd_df[col_name])
+        max_value = max(sd_df[col_name])
+        std_value = numpy.std(sd_df[col_name])
+        list = sort(sd_df[col_name])
+        value_of_percentile = 95 / 100
+        values_of_100_percent = len(list)
+        id_percentile = round(value_of_percentile * values_of_100_percent)
+        percentile = list[id_percentile-1]
+        return min_value, max_value, mean_value, std_value, percentile
+
+    def GetStatisticData(self, trip_id):
+        self.sd_df = self.CreateSdDf(trip_id)
+        data_no2 = self.CalculateStatisticValue(self.sd_df, "NO2")
+        data_voc = self.CalculateStatisticValue(self.sd_df, "VOC")
+        data_pm1 = self.CalculateStatisticValue(self.sd_df, "PM1")
+        data_pm2 = self.CalculateStatisticValue(self.sd_df, "PM2")
+        data_pm10 = self.CalculateStatisticValue(self.sd_df, "PM10")
+        return data_no2, data_voc, data_pm1, data_pm2, data_pm10
+
+    def GetStatisticDataInDfToCsv(self):
+        trips = self.db.GetAllTrips()
+        for trip in trips:
+            all_data = self.GetStatisticData(trip.Id)
+            data = {'Trip ID': (trip.Id, trip.Id, trip.Id, trip.Id, trip.Id),
+                    'Type': (trip.TripType, trip.TripType, trip.TripType, trip.TripType, trip.TripType)
+                , 'NO2': all_data[0], 'VOC': all_data[1], 'PM1': all_data[2], 'PM2': all_data[3], 'PM10': all_data[4]}
+            statistic_data_df = DataFrame(data)
+            statistic_data_df.rename(index={0: "min", 1: "max", 2: "mean", 3: "standard deviation", 4: '95th percentile'}, inplace=True)
+            self.ExportStatisticData(statistic_data_df, trip.Name)
+
     def GetFrame(self):
         return self.frame
 
@@ -230,8 +277,9 @@ class AnalyzePage:
         self.id_text.grid(row=1, column=0, sticky="W", padx=50)
         button = Button(self.frame, text="Analyze", command=lambda: self.AnalyzeTrip())
         button.grid(row=2, column=0, sticky="NSEW")
-        button = Button(self.frame, text="Analyze", command=lambda: self.AnalyzeTrip())
-        button.grid(row=2, column=0, sticky="NSEW")
+        button_statistic = Button(self.frame, text="Export statistic data for all trips.",
+                                  command=lambda: self.GetStatisticDataInDfToCsv())
+        button_statistic.grid(row=0, column=1, sticky="NSEW", padx=20, pady=100)
         return self
 
     def Hide(self):

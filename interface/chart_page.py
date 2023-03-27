@@ -2,6 +2,8 @@ import os
 from datetime import datetime
 from statistics import mean, median
 from tkinter import *
+
+import numpy
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from numpy import sort
 from utils.chart_creator import ChartCreator
@@ -61,7 +63,7 @@ class ChartPage:
         data_plot.get_tk_widget().grid(row=num_row, column=num_col, pady=1, rowspan=span_row, columnspan=span_col)
 
     def ShowStatistics(self):
-        stat_options = ["", "Average", "Median", "Min", "Max", "Percentile"]
+        stat_options = ["", "Average", "Median", "Min", "Max", "Percentile", "Standard  deviation"]
         self.variable = StringVar(self.frame)
         statistics_drop_list = OptionMenu(self.frame, self.variable, *stat_options)
         statistics_drop_list.grid(row=3, column=1, sticky="W")
@@ -131,10 +133,12 @@ class ChartPage:
             value_of_percentile = int(self.percentile_text.get("1.0", 'end-1c'))/100
             values_of_100_percent = len(list)
             id_percentile = round(value_of_percentile * values_of_100_percent)
-            percentile = ms_df[col_name][id_percentile]
+            percentile = list[id_percentile-1]
             return str(percentile)
-        else:
+        elif operation == "Max":
             return str(max(ms_df[col_name]))
+        else:
+            return str(numpy.std(ms_df[col_name]))
 
     def GetFrame(self):
         return self.frame
