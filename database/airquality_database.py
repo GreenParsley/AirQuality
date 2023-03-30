@@ -133,6 +133,14 @@ class AirQuality:
         self.sess.execute(trip_to_delete)
         self.sess.commit()
 
+    def GetLastTripId(self):
+        trips = self.sess.query(Trips).all()
+        if (trips is None) or (trips == 0):
+            name_id = 0
+        else:
+            name_id = trips[-1].Id
+        return name_id
+
     def GetAllTrips(self):
         trips = self.sess.query(Trips).all()
         return trips

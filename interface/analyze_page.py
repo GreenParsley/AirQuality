@@ -2,6 +2,8 @@ import os
 from datetime import timedelta
 from tkinter import *
 from tkinter.ttk import Treeview
+
+import geopy.distance
 import numpy
 from numpy import mean, sort
 from pandas import DataFrame
@@ -52,7 +54,7 @@ class AnalyzePage:
 
     def SplitTrips(self, measures, trip_date):
         trips = []
-        last_trip_id = 0
+        last_trip_id = self.db.GetLastTripId()
         start_measure = None
         end_measure = None
         for m in measures:
@@ -70,9 +72,12 @@ class AnalyzePage:
                 trip = Trips("Trip_" + str(last_trip_id + 1))
                 trip.StartDate = start_measure
                 trip.EndDate = end_measure
+                trip.TripType = current_trip.trip_type
                 trips.append(trip)
                 start_measure = None
                 end_measure = None
+                last_trip_id += 1
+            elif (start_measure is None) and (date > current_trip.end_date):
                 last_trip_id += 1
         if start_measure is not None:
             trip = Trips("Trip_" + str(last_trip_id + 1))
@@ -195,6 +200,8 @@ class AnalyzePage:
 
     def GetTripsFromPositions(self, positions):
         trip_date = []
+        speeds = []
+        last_position = None
         start_date = None
         end_date = None
         for p in positions:
@@ -202,15 +209,53 @@ class AnalyzePage:
             if start_date is None:
                 start_date = date
                 end_date = date
+                last_position = (p.Latitude, p.Longitude, date)
                 continue
             if (((date - end_date).total_seconds()) / 60.0) < 10:
                 end_date = date
+                current_position = (p.Latitude, p.Longitude, date)
+                speed = self.CalculateSpeed(last_position, current_position)
+                speeds.append(speed)
+                last_position = current_position
                 continue
             else:
-                trip_date.append(TripDate(start_date - timedelta(minutes=5), end_date + timedelta(minutes=5)))
+                trip_date.append(TripDate(start_date - timedelta(minutes=5), end_date + timedelta(minutes=5), self.GetTripType(self.GetAverageSpeed(speeds))))
                 start_date = None
                 end_date = None
+                speeds = []
         return trip_date
+
+    def GetTripType(self, speed):
+        #if speed większy to zwracam jakiś typ
+        if speed < 0.7:
+            return "postój " + str(round(speed, 2)) + " km/h"
+        elif (speed >= 0.7) and (speed < 9):
+            return "pieszy " + str(round(speed, 2)) + " km/h"
+        elif (speed >= 9) and (speed < 20):
+            return "bieg/wolna jazda " + str(round(speed, 2)) + " km/h"
+        elif (speed >= 20) and (speed < 40):
+            return "rowerowy " + str(round(speed, 2)) + " km/h"
+        elif (speed >= 40):
+            return "samochodowy, itp. " + str(round(speed, 2)) + " km/h"
+
+    def GetAverageSpeed(self, speeds):
+        #ileś najszybszych to policzyć średnią, jak nie ma to 0 dawać
+        if (speeds is None) or (len(speeds) == 0):
+            return 0
+        elif len(speeds) < 3:
+            return speeds[0]
+        else:
+            sorted_speeds = sort(speeds)
+            percent30 = round(len(sorted_speeds) * 0.3)
+            return mean(sorted_speeds[-percent30:])
+
+    def CalculateSpeed(self, last_position, current_position):
+        #liczyć distance i czas i potem prędkość
+        distance = geopy.distance.geodesic((last_position[0], last_position[1]), (current_position[0], current_position[1])).km
+        time_seconds = abs(last_position[2] - current_position[2])
+        time_hours = time_seconds.total_seconds() / (60*60)
+        speed = distance / time_hours
+        return speed
 
     def ExportStatisticData(self, data, trip_name):
         if not os.path.exists('Export'):
