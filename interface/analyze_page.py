@@ -138,7 +138,7 @@ class AnalyzePage:
         trips = []
         for child in children:
             values = self.analyzed_trips_table.item(child)["values"]
-            trips.append(Trips(values[1], values[5], values[6], values[5], values[2], values[3]))
+            trips.append(Trips(values[1], values[5], values[6], values[4], values[2], values[3]))
         for trip in trips:
             self.db.UpdateTrip(trip)
         measures_to_update = []
@@ -318,7 +318,7 @@ class AnalyzePage:
 
     def GetStatisticDataInDfToCsv(self):
         trips = self.db.GetAllTrips()
-        statistic_data_df = DataFrame(columns= ["Trip ID", "Type","Speed", "Distance",
+        statistic_data_df = DataFrame(columns=["Trip ID", "Type", "Speed", "Distance", "StartDate", "EndDate", "Time",
                  "min_NO2", 'max_NO2', 'mean_NO2', 'std_NO2', '95perc_NO2',
                  "min_VOC", 'max_VOC', 'mean_VOC', 'std_VOC', '95perc_VOC',
                  "min_PM1", 'max_PM1', 'mean_PM1', 'std_PM1', '95perc_PM1',
@@ -331,6 +331,9 @@ class AnalyzePage:
                     'Type': trip.TripType,
                     'Speed': trip.Speed,
                     'Distance': trip.Distance,
+                    'StartDate': trip.StartDate,
+                    'EndDate': trip.EndDate,
+                    'Time': (trip.EndDate - trip.StartDate).total_seconds() / 60.0,
                     'min_NO2': all_data[0][0], 'max_NO2': all_data[0][1], 'mean_NO2': all_data[0][2], 'std_NO2': all_data[0][3], '95perc_NO2': all_data[0][4],
                     'min_VOC': all_data[1][0], 'max_VOC': all_data[1][1], 'mean_VOC': all_data[1][2], 'std_VOC': all_data[1][3], '95perc_VOC': all_data[1][4],
                     'min_PM1': all_data[2][0], 'max_PM1': all_data[2][1], 'mean_PM1': all_data[2][2], 'std_PM1': all_data[2][3], '95perc_PM1': all_data[2][4],
