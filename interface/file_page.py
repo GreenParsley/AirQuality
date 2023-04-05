@@ -33,6 +33,9 @@ class FilePage:
         self.file_name.grid(row=4, column=2, sticky="NSEW")
         self.label_status = Label(self.frame, font=('Aerial 18 bold'))
         self.label_status.grid(row=6, column=2, sticky="NSEW")
+        self.variable = StringVar(self.frame)
+        options = ("none", "female", "male")
+        self.variable.set(options[0])
 
     def SelectFile(self):
         self.path = filedialog.askdirectory(title="Select a File")
@@ -49,12 +52,14 @@ class FilePage:
                 if "measures" in f:
                     data_measures = self.file_reader.Read(f)
                     measures = self.cast_models.CastToMeasures(data_measures, file.Id)
-                    self.db.AddMeasures(measures)
-                    self.FindStartAndEndDate(measures)
+                    measures_sorted = sorted(measures, key=lambda x: x.Date)
+                    self.db.AddMeasures(measures_sorted)
+                    self.FindStartAndEndDate(measures_sorted)
                 elif "positions" in f:
                     data_positions = self.file_reader.Read(f)
                     positions = self.cast_models.CastToPositions(data_positions, file.Id)
-                    self.db.AddPositions(positions)
+                    positions_sorted = sorted(positions, key=lambda x: x.Date)
+                    self.db.AddPositions(positions_sorted)
             file.StartDate = self.start_date
             file.EndDate = self.end_date
             self.db.UpdateTrip(file)
@@ -62,6 +67,8 @@ class FilePage:
         except EXCEPTION as e:
             print(e)
             self.label_status.config(text="Loading failed", fg="red")
+
+
 
     def FindStartAndEndDate(self, measures):
         if (self.start_date is None) or (self.start_date > measures[0].Date):

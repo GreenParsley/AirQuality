@@ -75,10 +75,12 @@ class Trips(Base):
     StartDate = Column(DateTime, nullable=True)
     EndDate = Column(DateTime, nullable=True)
     TripType = Column(String, nullable=True)
+    Speed = Column(String, nullable=True)
+    Distance = Column(String, nullable=True)
     Measures = relationship("Measures")
     Positions = relationship("Positions")
 
-    def __init__(self, name, start_date=None, end_date=None, trip_type=None):
+    def __init__(self, name, start_date=None, end_date=None, trip_type=None, distance=None, speed=None):
         self.Name = name
         self.CreateDate = date.today()
         if start_date is not None:
@@ -86,6 +88,8 @@ class Trips(Base):
         if end_date is not None:
             self.EndDate = datetime.strptime(end_date, "%Y-%m-%d %H:%M:%S")
         self.TripType = trip_type
+        self.Distance = distance
+        self.Speed = speed
 
 class AirQuality:
     sess: Session
@@ -134,11 +138,8 @@ class AirQuality:
         self.sess.commit()
 
     def GetLastTripId(self):
-        trips = self.sess.query(Trips).all()
-        if (trips is None) or (trips == 0):
-            name_id = 0
-        else:
-            name_id = trips[-1].Id
+        trips = self.GetAllTrips()
+        name_id = trips[-1].Id
         return name_id
 
     def GetAllTrips(self):

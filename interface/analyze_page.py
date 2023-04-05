@@ -6,7 +6,7 @@ from tkinter.ttk import Treeview
 import geopy.distance
 import numpy
 from numpy import mean, sort
-from pandas import DataFrame
+from pandas import DataFrame, Series, concat
 from database.airquality_database import AirQuality, Trips
 from models.trip_date import TripDate
 from utils.cast_models import CastModels
@@ -25,16 +25,20 @@ class AnalyzePage:
         self.trips_table = Treeview(self.frame, yscrollcommand=scroll.set)
         self.trips_table.grid(row=0, column=0)
         scroll.config(command=self.trips_table.yview)
-        self.trips_table['columns'] = ("Id", "Name", "Type", "StartDate", "EndDate")
+        self.trips_table['columns'] = ("Id", "Name", "Distance", "Speed", "Type", "StartDate", "EndDate")
         self.trips_table.column("#0", width=0, stretch=NO)
-        self.trips_table.column("Id", anchor=CENTER, width=250)
-        self.trips_table.column("Name", anchor=CENTER, width=250)
-        self.trips_table.column("Type", anchor=CENTER, width=250)
-        self.trips_table.column("StartDate", anchor=CENTER, width=250)
-        self.trips_table.column("EndDate", anchor=CENTER, width=250)
+        self.trips_table.column("Id", anchor=CENTER, width=100)
+        self.trips_table.column("Name", anchor=CENTER, width=200)
+        self.trips_table.column("Distance", anchor=CENTER, width=150)
+        self.trips_table.column("Speed", anchor=CENTER, width=150)
+        self.trips_table.column("Type", anchor=CENTER, width=200)
+        self.trips_table.column("StartDate", anchor=CENTER, width=200)
+        self.trips_table.column("EndDate", anchor=CENTER, width=200)
         self.trips_table.heading("#0", text="", anchor=CENTER)
         self.trips_table.heading("Id", text="Id", anchor=CENTER)
         self.trips_table.heading("Name", text="Name", anchor=CENTER)
+        self.trips_table.heading("Distance", text="Distance", anchor=CENTER)
+        self.trips_table.heading("Speed", text="Speed", anchor=CENTER)
         self.trips_table.heading("Type", text="Type", anchor=CENTER)
         self.trips_table.heading("StartDate", text="StartDate", anchor=CENTER)
         self.trips_table.heading("EndDate", text="EndDate", anchor=CENTER)
@@ -54,11 +58,16 @@ class AnalyzePage:
 
     def SplitTrips(self, measures, trip_date):
         trips = []
-        last_trip_id = self.db.GetLastTripId()
+        last_trip_id = 0
+        last_trip_id_name = self.db.GetLastTripId()
         start_measure = None
         end_measure = None
+        previous_date = None
         for m in measures:
             date = m.Date
+            if (previous_date is not None) and (date < previous_date):
+                break
+            previous_date = date
             if last_trip_id >= len(trip_date):
                 break
             current_trip = trip_date[last_trip_id]
@@ -69,20 +78,26 @@ class AnalyzePage:
                 else:
                     end_measure = date
             elif start_measure is not None:
-                trip = Trips("Trip_" + str(last_trip_id + 1))
+                trip = Trips("Trip_" + str(last_trip_id_name + 1))
                 trip.StartDate = start_measure
                 trip.EndDate = end_measure
                 trip.TripType = current_trip.trip_type
+                trip.Speed = current_trip.speed
+                trip.Distance = current_trip.distance
                 trips.append(trip)
                 start_measure = None
                 end_measure = None
                 last_trip_id += 1
+                last_trip_id_name += 1
             elif (start_measure is None) and (date > current_trip.end_date):
                 last_trip_id += 1
         if start_measure is not None:
-            trip = Trips("Trip_" + str(last_trip_id + 1))
+            trip = Trips("Trip_" + str(last_trip_id_name + 1))
             trip.StartDate = start_measure
             trip.EndDate = end_measure
+            trip.TripType = current_trip.trip_type
+            trip.Speed = current_trip.speed
+            trip.Distance = current_trip.distance
             trips.append(trip)
         return trips
 
@@ -93,23 +108,27 @@ class AnalyzePage:
         self.analyzed_trips_table.bind("<Double-1>", self.EditTable)
         self.analyzed_trips_table.grid(row=3, column=0, rowspan=5)
         scroll.config(command=self.analyzed_trips_table.yview)
-        self.analyzed_trips_table['columns'] = ("Id", "Name", "Type", "StartDate", "EndDate")
+        self.analyzed_trips_table['columns'] = ("Id", "Name", "Distance", "Speed", "Type", "StartDate", "EndDate")
         self.analyzed_trips_table.column("#0", width=0, stretch=NO)
-        self.analyzed_trips_table.column("Id", anchor=CENTER, width=250)
-        self.analyzed_trips_table.column("Name", anchor=CENTER, width=250)
-        self.analyzed_trips_table.column("Type", anchor=CENTER, width=250)
-        self.analyzed_trips_table.column("StartDate", anchor=CENTER, width=250)
-        self.analyzed_trips_table.column("EndDate", anchor=CENTER, width=250)
+        self.analyzed_trips_table.column("Id", anchor=CENTER, width=100)
+        self.analyzed_trips_table.column("Name", anchor=CENTER, width=200)
+        self.analyzed_trips_table.column("Distance", anchor=CENTER, width=150)
+        self.analyzed_trips_table.column("Speed", anchor=CENTER, width=150)
+        self.analyzed_trips_table.column("Type", anchor=CENTER, width=200)
+        self.analyzed_trips_table.column("StartDate", anchor=CENTER, width=200)
+        self.analyzed_trips_table.column("EndDate", anchor=CENTER, width=200)
         self.analyzed_trips_table.heading("#0", text="", anchor=CENTER)
         self.analyzed_trips_table.heading("Id", text="Id", anchor=CENTER)
         self.analyzed_trips_table.heading("Name", text="Name", anchor=CENTER)
+        self.analyzed_trips_table.heading("Distance", text="Distance", anchor=CENTER)
+        self.analyzed_trips_table.heading("Speed", text="Speed", anchor=CENTER)
         self.analyzed_trips_table.heading("Type", text="Type", anchor=CENTER)
         self.analyzed_trips_table.heading("StartDate", text="StartDate", anchor=CENTER)
         self.analyzed_trips_table.heading("EndDate", text="EndDate", anchor=CENTER)
         index = 0
         for t in trips:
             self.analyzed_trips_table.insert(parent='', index='end', iid=index, text='',
-                                             values=(t.Id, t.Name, t.TripType, t.StartDate, t.EndDate))
+                                             values=(t.Id, t.Name, t.Distance, t.Speed, t.TripType, t.StartDate, t.EndDate))
             index += 1
         button_save_all = Button(self.frame, text="Save all", command=lambda: self.SaveAllChanges(), padx=10)
         button_save_all.grid(row=9, column=0, sticky="E")
@@ -119,7 +138,7 @@ class AnalyzePage:
         trips = []
         for child in children:
             values = self.analyzed_trips_table.item(child)["values"]
-            trips.append(Trips(values[1], values[3], values[4], values[2]))
+            trips.append(Trips(values[1], values[5], values[6], values[5], values[2], values[3]))
         for trip in trips:
             self.db.UpdateTrip(trip)
         measures_to_update = []
@@ -200,6 +219,7 @@ class AnalyzePage:
 
     def GetTripsFromPositions(self, positions):
         trip_date = []
+        total_distance = 0
         speeds = []
         last_position = None
         start_date = None
@@ -214,15 +234,21 @@ class AnalyzePage:
             if (((date - end_date).total_seconds()) / 60.0) < 10:
                 end_date = date
                 current_position = (p.Latitude, p.Longitude, date)
-                speed = self.CalculateSpeed(last_position, current_position)
+                speed_and_distance = self.CalculateSpeed(last_position, current_position)
+                speed = speed_and_distance[0]
                 speeds.append(speed)
+                total_distance = total_distance + speed_and_distance[1]
                 last_position = current_position
                 continue
             else:
-                trip_date.append(TripDate(start_date - timedelta(minutes=5), end_date + timedelta(minutes=5), self.GetTripType(self.GetAverageSpeed(speeds))))
+                trip_date.append(TripDate(start_date - timedelta(minutes=5), end_date + timedelta(minutes=5), self.GetTripType(self.GetAverageSpeed(speeds)), total_distance, self.GetAverageSpeed(speeds)))
                 start_date = None
                 end_date = None
                 speeds = []
+                total_distance = 0
+        if start_date is not None:
+            trip_date.append(TripDate(start_date - timedelta(minutes=5), end_date + timedelta(minutes=5),
+                                      self.GetTripType(self.GetAverageSpeed(speeds)), total_distance, self.GetAverageSpeed(speeds)))
         return trip_date
 
     def GetTripType(self, speed):
@@ -255,12 +281,13 @@ class AnalyzePage:
         time_seconds = abs(last_position[2] - current_position[2])
         time_hours = time_seconds.total_seconds() / (60*60)
         speed = distance / time_hours
-        return speed
+        return speed, distance
 
-    def ExportStatisticData(self, data, trip_name):
+    def ExportStatisticData(self, data):
+        last_id = self.db.GetLastTripId()
         if not os.path.exists('Export'):
             os.mkdir('Export')
-        file_name = 'Export\\' + "Statistic_data_" + str(trip_name) + '.csv'
+        file_name = 'Export\\' + "Statistic_data_last_trip-" + str(last_id) + '.csv'
         data.to_csv(file_name, encoding='utf-8', index=True)
 
     def CreateSdDf(self, trip_id):
@@ -273,11 +300,11 @@ class AnalyzePage:
         min_value = min(sd_df[col_name])
         max_value = max(sd_df[col_name])
         std_value = numpy.std(sd_df[col_name])
-        list = sort(sd_df[col_name])
+        list_sort = sort(sd_df[col_name])
         value_of_percentile = 95 / 100
-        values_of_100_percent = len(list)
+        values_of_100_percent = len(list_sort)
         id_percentile = round(value_of_percentile * values_of_100_percent)
-        percentile = list[id_percentile-1]
+        percentile = list_sort[id_percentile-1]
         return min_value, max_value, mean_value, std_value, percentile
 
     def GetStatisticData(self, trip_id):
@@ -291,14 +318,27 @@ class AnalyzePage:
 
     def GetStatisticDataInDfToCsv(self):
         trips = self.db.GetAllTrips()
+        statistic_data_df = DataFrame(columns= ["Trip ID", "Type","Speed", "Distance",
+                 "min_NO2", 'max_NO2', 'mean_NO2', 'std_NO2', '95perc_NO2',
+                 "min_VOC", 'max_VOC', 'mean_VOC', 'std_VOC', '95perc_VOC',
+                 "min_PM1", 'max_PM1', 'mean_PM1', 'std_PM1', '95perc_PM1',
+                 "min_PM2,5", 'max_PM2,5', 'mean_PM2,5', 'std_PM2,5', '95perc_PM2,5',
+                 "min_PM10", 'max_PM10', 'mean_PM10', 'std_PM10', '95perc_PM10'])
+        id = 1
         for trip in trips:
             all_data = self.GetStatisticData(trip.Id)
-            data = {'Trip ID': (trip.Id, trip.Id, trip.Id, trip.Id, trip.Id),
-                    'Type': (trip.TripType, trip.TripType, trip.TripType, trip.TripType, trip.TripType)
-                , 'NO2': all_data[0], 'VOC': all_data[1], 'PM1': all_data[2], 'PM2': all_data[3], 'PM10': all_data[4]}
-            statistic_data_df = DataFrame(data)
-            statistic_data_df.rename(index={0: "min", 1: "max", 2: "mean", 3: "standard deviation", 4: '95th percentile'}, inplace=True)
-            self.ExportStatisticData(statistic_data_df, trip.Name)
+            data = {'Trip ID': trip.Id,
+                    'Type': trip.TripType,
+                    'Speed': trip.Speed,
+                    'Distance': trip.Distance,
+                    'min_NO2': all_data[0][0], 'max_NO2': all_data[0][1], 'mean_NO2': all_data[0][2], 'std_NO2': all_data[0][3], '95perc_NO2': all_data[0][4],
+                    'min_VOC': all_data[1][0], 'max_VOC': all_data[1][1], 'mean_VOC': all_data[1][2], 'std_VOC': all_data[1][3], '95perc_VOC': all_data[1][4],
+                    'min_PM1': all_data[2][0], 'max_PM1': all_data[2][1], 'mean_PM1': all_data[2][2], 'std_PM1': all_data[2][3], '95perc_PM1': all_data[2][4],
+                    'min_PM2,5': all_data[3][0], 'max_PM2,5': all_data[3][1], 'mean_PM2,5': all_data[3][2], 'std_PM2,5': all_data[3][3], '95perc_PM2,5': all_data[3][4],
+                    'min_PM10': all_data[4][0], 'max_PM10': all_data[4][1], 'mean_PM10': all_data[4][2], 'std_PM10': all_data[4][3], '95perc_PM10': all_data[4][4]}
+            statistic_data_df.loc[id] = data
+            id += 1
+        self.ExportStatisticData(statistic_data_df)
 
     def GetFrame(self):
         return self.frame
@@ -310,7 +350,7 @@ class AnalyzePage:
         index = 0
         for t in trips:
             self.trips_table.insert(parent='', index='end', iid=index, text='',
-                                    values=(t.Id, t.Name, t.TripType, t.StartDate, t.EndDate))
+                                    values=(t.Id, t.Name, t.Distance, t.Speed, t.TripType, t.StartDate, t.EndDate))
             index += 1
         id_trips = []
         for t in trips:
