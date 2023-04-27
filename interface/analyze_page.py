@@ -254,15 +254,15 @@ class AnalyzePage:
     def GetTripType(self, speed):
         #if speed większy to zwracam jakiś typ
         if speed < 0.7:
-            return "postój " + str(round(speed, 2)) + " km/h"
+            return "stop " + str(round(speed, 2)) + " km/h"
         elif (speed >= 0.7) and (speed < 9):
-            return "pieszy " + str(round(speed, 2)) + " km/h"
+            return "walk " + str(round(speed, 2)) + " km/h"
         elif (speed >= 9) and (speed < 20):
-            return "bieg/wolna jazda " + str(round(speed, 2)) + " km/h"
+            return "run/slow ride " + str(round(speed, 2)) + " km/h"
         elif (speed >= 20) and (speed < 40):
-            return "rowerowy " + str(round(speed, 2)) + " km/h"
+            return "bicycle " + str(round(speed, 2)) + " km/h"
         elif (speed >= 40):
-            return "samochodowy, itp. " + str(round(speed, 2)) + " km/h"
+            return "vehicle, etc. " + str(round(speed, 2)) + " km/h"
 
     def GetAverageSpeed(self, speeds):
         #ileś najszybszych to policzyć średnią, jak nie ma to 0 dawać
@@ -301,10 +301,14 @@ class AnalyzePage:
         max_value = max(sd_df[col_name])
         std_value = numpy.std(sd_df[col_name])
         list_sort = sort(sd_df[col_name])
-        value_of_percentile = 95 / 100
+        value_of_2_and_half_percent = 2.5 / 100
+        value_of_97_and_half_percent = 97.5 / 100
         values_of_100_percent = len(list_sort)
-        id_percentile = round(value_of_percentile * values_of_100_percent)
-        percentile = list_sort[id_percentile-1]
+        id_2_and_half_percent = round(value_of_2_and_half_percent * values_of_100_percent)
+        id_97_and_half_percent = round(value_of_97_and_half_percent * values_of_100_percent)
+        two_and_half_percent = list_sort[id_2_and_half_percent-1]
+        ninetyseven_and_half_percent = list_sort[id_97_and_half_percent - 1]
+        percentile = (two_and_half_percent, ninetyseven_and_half_percent)
         return min_value, max_value, mean_value, std_value, percentile
 
     def GetStatisticData(self, trip_id):
@@ -318,27 +322,27 @@ class AnalyzePage:
 
     def GetStatisticDataInDfToCsv(self):
         trips = self.db.GetAllTrips()
-        statistic_data_df = DataFrame(columns=["Trip ID", "Type", "Speed", "Distance", "StartDate", "EndDate", "Time",
-                 "min_NO2", 'max_NO2', 'mean_NO2', 'std_NO2', '95perc_NO2',
-                 "min_VOC", 'max_VOC', 'mean_VOC', 'std_VOC', '95perc_VOC',
-                 "min_PM1", 'max_PM1', 'mean_PM1', 'std_PM1', '95perc_PM1',
-                 "min_PM2,5", 'max_PM2,5', 'mean_PM2,5', 'std_PM2,5', '95perc_PM2,5',
-                 "min_PM10", 'max_PM10', 'mean_PM10', 'std_PM10', '95perc_PM10'])
+        statistic_data_df = DataFrame(columns=["Trip ID", "Type", "Speed [km/h]", "Distance [km]", "StartDate", "EndDate", "Time [min]",
+                 "min_NO2", 'max_NO2', 'mean_NO2', 'std_NO2', '95CI_NO2',
+                 "min_VOC", 'max_VOC', 'mean_VOC', 'std_VOC', '95CI_VOC',
+                 "min_PM1", 'max_PM1', 'mean_PM1', 'std_PM1', '95CI_PM1',
+                 "min_PM2,5", 'max_PM2,5', 'mean_PM2,5', 'std_PM2,5', '95CI_PM2,5',
+                 "min_PM10", 'max_PM10', 'mean_PM10', 'std_PM10', '95CI_PM10'])
         id = 1
         for trip in trips:
             all_data = self.GetStatisticData(trip.Id)
             data = {'Trip ID': trip.Id,
                     'Type': trip.TripType,
-                    'Speed': trip.Speed,
-                    'Distance': trip.Distance,
+                    'Speed [km/h]': trip.Speed,
+                    'Distance [km]': trip.Distance,
                     'StartDate': trip.StartDate,
                     'EndDate': trip.EndDate,
-                    'Time': (trip.EndDate - trip.StartDate).total_seconds() / 60.0,
-                    'min_NO2': all_data[0][0], 'max_NO2': all_data[0][1], 'mean_NO2': all_data[0][2], 'std_NO2': all_data[0][3], '95perc_NO2': all_data[0][4],
-                    'min_VOC': all_data[1][0], 'max_VOC': all_data[1][1], 'mean_VOC': all_data[1][2], 'std_VOC': all_data[1][3], '95perc_VOC': all_data[1][4],
-                    'min_PM1': all_data[2][0], 'max_PM1': all_data[2][1], 'mean_PM1': all_data[2][2], 'std_PM1': all_data[2][3], '95perc_PM1': all_data[2][4],
-                    'min_PM2,5': all_data[3][0], 'max_PM2,5': all_data[3][1], 'mean_PM2,5': all_data[3][2], 'std_PM2,5': all_data[3][3], '95perc_PM2,5': all_data[3][4],
-                    'min_PM10': all_data[4][0], 'max_PM10': all_data[4][1], 'mean_PM10': all_data[4][2], 'std_PM10': all_data[4][3], '95perc_PM10': all_data[4][4]}
+                    'Time [min]': (trip.EndDate - trip.StartDate).total_seconds() / 60.0,
+                    'min_NO2': all_data[0][0], 'max_NO2': all_data[0][1], 'mean_NO2': all_data[0][2], 'std_NO2': all_data[0][3], '95CI_NO2': all_data[0][4],
+                    'min_VOC': all_data[1][0], 'max_VOC': all_data[1][1], 'mean_VOC': all_data[1][2], 'std_VOC': all_data[1][3], '95CI_VOC': all_data[1][4],
+                    'min_PM1': all_data[2][0], 'max_PM1': all_data[2][1], 'mean_PM1': all_data[2][2], 'std_PM1': all_data[2][3], '95CI_PM1': all_data[2][4],
+                    'min_PM2,5': all_data[3][0], 'max_PM2,5': all_data[3][1], 'mean_PM2,5': all_data[3][2], 'std_PM2,5': all_data[3][3], '95CI_PM2,5': all_data[3][4],
+                    'min_PM10': all_data[4][0], 'max_PM10': all_data[4][1], 'mean_PM10': all_data[4][2], 'std_PM10': all_data[4][3], '95CI_PM10': all_data[4][4]}
             statistic_data_df.loc[id] = data
             id += 1
         self.ExportStatisticData(statistic_data_df)
