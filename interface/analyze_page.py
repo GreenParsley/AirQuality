@@ -254,15 +254,13 @@ class AnalyzePage:
     def GetTripType(self, speed):
         #if speed większy to zwracam jakiś typ
         if speed < 0.7:
-            return "stop " + str(round(speed, 2)) + " km/h"
+            return "stop "
         elif (speed >= 0.7) and (speed < 9):
-            return "walk " + str(round(speed, 2)) + " km/h"
-        elif (speed >= 9) and (speed < 20):
-            return "run/slow ride " + str(round(speed, 2)) + " km/h"
-        elif (speed >= 20) and (speed < 40):
-            return "bicycle " + str(round(speed, 2)) + " km/h"
+            return "walk "
+        elif (speed >= 9) and (speed < 40):
+            return "bicycle "
         elif (speed >= 40):
-            return "vehicle, etc. " + str(round(speed, 2)) + " km/h"
+            return "vehicle, etc. "
 
     def GetAverageSpeed(self, speeds):
         #ileś najszybszych to policzyć średnią, jak nie ma to 0 dawać
@@ -272,8 +270,8 @@ class AnalyzePage:
             return speeds[0]
         else:
             sorted_speeds = sort(speeds)
-            percent30 = round(len(sorted_speeds) * 0.3)
-            return mean(sorted_speeds[-percent30:])
+            percent50 = round(len(sorted_speeds) * 0.5)
+            return mean(sorted_speeds[-percent50:])
 
     def CalculateSpeed(self, last_position, current_position):
         #liczyć distance i czas i potem prędkość
